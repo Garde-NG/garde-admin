@@ -7,6 +7,7 @@ import { TwoFactor } from "@/components/auth/two-factor";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/ui/password-field";
+import { useToast } from "@/components/ui/toast";
 import { messageOf } from "@/lib/auth/client";
 import { useAuthMutation } from "@/lib/query/auth";
 import { rememberPasskey } from "@/lib/auth/passkey";
@@ -15,10 +16,10 @@ export function SecuritySettings() {
   const optionsMutation = useAuthMutation<{ options: PublicKeyCredentialCreationOptionsJSON }>();
   const mutation = useAuthMutation();
   const { user, refreshUser } = useUser();
+  const toast = useToast();
   const [changing, setChanging] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [closing, setClosing] = useState(false);
   const [password, setPassword] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
@@ -28,7 +29,7 @@ export function SecuritySettings() {
     else dialog.current?.close();
   }, [closing]);
   async function registerPasskey() {
-    setBusy(true); setError(""); setNotice("");
+    setBusy(true); setError("");
     try {
       if (!window.PublicKeyCredential || !window.isSecureContext) throw new Error("Passkeys require a supported browser on HTTPS or localhost.");
       const { options } = await optionsMutation.mutateAsync({ operation: "webauthn/register/options", body: {} });
@@ -36,8 +37,8 @@ export function SecuritySettings() {
       await mutation.mutateAsync({ operation: "webauthn/register/verify", body: { credential } });
       rememberPasskey(user.email);
       await refreshUser();
-      setNotice("Passkey registered. You can use it the next time you sign in on this browser.");
-    } catch (error) { setError(messageOf(error)); }
+      toast.success("Passkey registered. You can use it the next time you sign in on this browser.");
+    } catch (error) { toast.error(messageOf(error)); }
     finally { setBusy(false); }
   }
   async function closeAccount() {
@@ -45,30 +46,28 @@ export function SecuritySettings() {
     try {
       await mutation.mutateAsync({ operation: "close-account", body: { password } });
       window.location.replace("/login?reason=closed");
-    } catch (error) { setError(messageOf(error)); }
+    } catch (error) { const message = messageOf(error); setError(message); toast.error(message); }
     finally { setBusy(false); }
   }
   const card = "rounded-xl border border-border bg-surface p-5 sm:p-6";
   return <div className="space-y-5">
-    {error && !closing && <Alert tone="error">{error}</Alert>}
-    {notice && <Alert tone="success">{notice}</Alert>}
     <section className={card}>
       <h2 className="font-semibold">Two-factor authentication</h2>
       <p className="mt-1 mb-5 text-sm text-muted">Required for your account. Your active security method is marked below and cannot be selected again.</p>
       {changing ? <TwoFactor changing setupRequired={false} method={currentMethod}
-        onDone={() => { setChanging(false); void refreshUser().then(() => setNotice("Verification method updated.")).catch(error => setError(messageOf(error))); }}
+        onDone={() => { setChanging(false); void refreshUser().then(() => toast.success("Verification method updated.")).catch(error => toast.error(messageOf(error))); }}
         onCancel={() => setChanging(false)} /> : <div className="space-y-3">
           <MethodCard
             title="Email verification"
             description="Receive a 6-digit code by email when you sign in."
             active={currentMethod === "email_otp"}
-            action={currentMethod === "email_otp" ? <Button variant="secondary" disabled>Current method</Button> : <Button variant="secondary" onClick={() => { setChanging(true); setError(""); setNotice(""); }}>Switch to email</Button>}
+            action={currentMethod === "email_otp" ? <Button variant="secondary" disabled>Current method</Button> : <Button variant="secondary" onClick={() => { setChanging(true); setError(""); }}>Switch to email</Button>}
           />
           <MethodCard
             title="Authenticator app"
             description="Use codes from Google Authenticator, 1Password, Authy, or a similar app."
             active={currentMethod === "totp"}
-            action={currentMethod === "totp" ? <Button variant="secondary" disabled>Current method</Button> : <Button variant="secondary" onClick={() => { setChanging(true); setError(""); setNotice(""); }}>Switch to app</Button>}
+            action={currentMethod === "totp" ? <Button variant="secondary" disabled>Current method</Button> : <Button variant="secondary" onClick={() => { setChanging(true); setError(""); }}>Switch to app</Button>}
           />
         </div>}
     </section>

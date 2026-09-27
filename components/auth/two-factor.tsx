@@ -4,9 +4,9 @@ import { useState } from "react";
 import { AuthError, messageOf } from "@/lib/auth/client";
 import { useAuthMutation, useSignIn } from "@/lib/query/auth";
 import type { Setup, TwoFactorMethod } from "@/lib/auth/types";
-import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CodeField } from "@/components/ui/code-field";
+import { useToast } from "@/components/ui/toast";
 
 export function TwoFactor({ setupRequired, method, changing = false, onDone, onCancel }: {
   setupRequired: boolean; method: TwoFactorMethod | null; changing?: boolean;
@@ -15,6 +15,7 @@ export function TwoFactor({ setupRequired, method, changing = false, onDone, onC
   const setupMutation = useAuthMutation<Setup>();
   const methodMutation = useAuthMutation();
   const signInMutation = useSignIn();
+  const toast = useToast();
   const [setup, setSetup] = useState<Setup | null>(null);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -27,7 +28,7 @@ export function TwoFactor({ setupRequired, method, changing = false, onDone, onC
   async function start() {
     setBusy(true); setError("");
     try { setSetup(await setupMutation.mutateAsync({ operation: changing ? "2fa/method" : "2fa/setup", body: { method: selected } })); }
-    catch (error) { setError(messageOf(error)); if (error instanceof AuthError && error.status === 401) setExpired(true); }
+    catch (error) { const message = messageOf(error); setError(message); toast.error(message); if (error instanceof AuthError && error.status === 401) setExpired(true); }
     finally { setBusy(false); }
   }
   async function verify(nextCode = code) {
@@ -37,14 +38,14 @@ export function TwoFactor({ setupRequired, method, changing = false, onDone, onC
       else await signInMutation.mutateAsync({ mode: "verify", code: nextCode });
       onDone();
     } catch (error) {
-      setError(messageOf(error)); setCode("");
+      const message = messageOf(error);
+      setError(message); toast.error(message); setCode("");
       // Pending challenges can be consumed even when verification fails.
       if (!changing) setExpired(true);
     }
     finally { setBusy(false); }
   }
   return <div className="space-y-5">
-    {error && <Alert tone="error">{error}</Alert>}
     {choosing ? <>
       <p className="text-sm text-muted">{changing ? "Your current method stays active until you verify the new one." : "Set up two-factor authentication to secure your admin account."}</p>
       <fieldset disabled={busy || expired} className="space-y-3">
@@ -70,6 +71,7 @@ export function TwoFactor({ setupRequired, method, changing = false, onDone, onC
       <CodeField label={current === "totp" ? "Code from your app" : "Verification code"} value={code} onChange={setCode} onComplete={(nextCode) => { void verify(nextCode); }} disabled={busy || expired} autoFocus />
       <Button type="submit" fullWidth loading={busy} disabled={expired || code.length !== 6}>Verify and continue</Button>
       {expired && <p className="text-sm text-muted">Please return to sign in to start a fresh verification.</p>}
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       {!changing && <p className="text-xs text-muted">Expired or missing code? Return to sign in to start a new verification.</p>}
     </form>}
     <Button variant="ghost" fullWidth disabled={busy} onClick={onCancel}>{changing ? "Cancel" : "Back to sign in"}</Button>
