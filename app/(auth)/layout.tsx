@@ -13,9 +13,11 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
       <AuthHero />
 
       <div className="flex min-w-0 flex-col pb-[env(safe-area-inset-bottom)]">
-        <header className="flex items-center justify-between gap-4 px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8 sm:pt-[max(1.5rem,env(safe-area-inset-top))]">
+        <header className="flex items-center gap-4 px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8 sm:pt-[max(1.5rem,env(safe-area-inset-top))]">
           <Logo className="lg:hidden" />
-          <ThemeToggle />
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
         </header>
 
         <main className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8 sm:py-12">
