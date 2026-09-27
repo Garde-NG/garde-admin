@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { PageHeader } from "@/components/dashboard/page-header";
-import { Button } from "@/components/ui/button";
+import { ConfigPageHeader, ErrorState, Icon } from "@/components/dashboard/screen-kit";
+import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/provider";
 import { useNotification, useNotificationActions } from "@/lib/query/notifications";
 
@@ -36,38 +36,50 @@ export function NotificationDetailPage({ id }: { id: string }) {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title={t("notifications.detailTitle")} description={t("notifications.detailDescription")} />
+      <ConfigPageHeader
+        icon="bell"
+        title={t("notifications.detailTitle")}
+        backHref="/notifications"
+        backLabel={t("notifications.title")}
+        description={t("notifications.detailDescription")}
+      />
 
       {query.isLoading ? (
-        <div className="h-56 animate-pulse rounded-xl border border-border bg-subtle/50" />
+        <div className="h-56 animate-pulse rounded-2xl border border-border bg-subtle/40" />
       ) : query.isError ? (
-        <section className="rounded-xl border border-border bg-surface p-8 text-center shadow-card">
-          <p className="text-sm text-muted">{query.error.message}</p>
-          <Button className="mt-4" variant="secondary" onClick={() => query.refetch()}>{t("common.tryAgain")}</Button>
+        <section className="rounded-2xl border border-border bg-surface shadow-card">
+          <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         </section>
       ) : notification ? (
-        <article className="space-y-5 rounded-xl border border-border bg-surface p-5 shadow-card sm:p-6">
+        <article className="space-y-5 rounded-2xl border border-border bg-surface p-5 shadow-card sm:p-6">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${notification.is_read ? "bg-subtle text-muted" : "bg-brand-soft text-brand"}`}>
-              {notification.is_read ? t("notifications.read") : t("notifications.new")}
-            </span>
-            <time dateTime={notification.created_at} className="text-sm text-muted">{formatDateTime(notification.created_at)}</time>
+            <Badge tone={notification.is_read ? "neutral" : "brand"}>
+              <span className="inline-flex items-center gap-1.5">
+                {!notification.is_read && <span aria-hidden className="size-1.5 rounded-full bg-current" />}
+                {notification.is_read ? t("notifications.read") : t("notifications.new")}
+              </span>
+            </Badge>
+            <Badge tone="neutral">{notification.type}</Badge>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">{notification.title}</h2>
+            <h2 className="text-xl font-semibold tracking-tight">{notification.title}</h2>
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
+              <Icon name="clock" className="size-4" />
+              <time dateTime={notification.created_at}>{formatDateTime(notification.created_at)}</time>
+            </p>
             <p className="mt-3 whitespace-pre-line break-words text-sm leading-7 text-foreground">{notification.body}</p>
           </div>
 
           <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row">
+            {actionPath && (
+              <Link href={href(actionPath)} className="inline-flex h-10 items-center justify-center rounded-lg bg-brand px-4 text-sm font-medium text-brand-foreground transition hover:brightness-110">
+                {t("notifications.openRelated")} <Icon name="arrowRight" className="size-4" />
+              </Link>
+            )}
             <Link href={href("/notifications")} className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-medium transition hover:bg-subtle">
               {t("notifications.backToNotifications")}
             </Link>
-            {actionPath && (
-              <Link href={href(actionPath)} className="inline-flex h-10 items-center justify-center rounded-lg bg-brand px-4 text-sm font-medium text-brand-foreground transition hover:brightness-110">
-                {t("notifications.openRelated")}
-              </Link>
-            )}
           </div>
         </article>
       ) : null}

@@ -71,6 +71,121 @@ interface DateRangePickerProps {
   allowAll?: boolean;
 }
 
+interface DatePickerProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  hint?: string;
+  className?: string;
+}
+
+export function DatePicker({ label, value, onChange, disabled = false, hint, className = "" }: DatePickerProps) {
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [month, setMonth] = useState((value || lagosToday()).slice(0, 7));
+  const days = Array.from({ length: daysInMonth(month) }, (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`);
+  const offset = weekdayOffset(month);
+  const today = lagosToday();
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!popoverRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const choose = (day: string) => {
+    onChange(day);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={popoverRef} className={`relative min-w-0 space-y-1.5 ${className}`}>
+      <label className="block text-sm font-medium">{label}</label>
+      <button
+        type="button"
+        disabled={disabled}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => {
+          setMonth((value || lagosToday()).slice(0, 7));
+          setOpen((current) => !current);
+        }}
+        className={`group flex h-10 w-full items-center justify-between gap-3 rounded-lg border border-input bg-surface px-3 text-left text-sm outline-none transition hover:border-brand/50 focus:border-brand focus:ring-3 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-60 pointer-coarse:h-11 pointer-coarse:text-base ${open ? "border-brand ring-3 ring-brand/20" : ""}`}
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <svg aria-hidden viewBox="0 0 24 24" className="size-4 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 2v4M16 2v4M4 10h16" />
+            <rect x="4" y="4" width="16" height="18" rx="2" />
+          </svg>
+          <span className={`truncate ${value ? "font-medium" : "text-muted"}`}>{value ? dateLabel(value) : "Select a date"}</span>
+        </span>
+        <svg viewBox="0 0 24 24" className={`size-4 shrink-0 text-muted transition group-hover:text-foreground ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {hint && <p className="text-xs text-muted">{hint}</p>}
+
+      {open && (
+        <div role="dialog" aria-label={label} className="absolute left-0 z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-surface p-3 shadow-card">
+          <div className="flex items-center justify-between gap-3">
+            <button type="button" onClick={() => setMonth(shiftMonth(month, -1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label="Previous month">
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <p className="font-semibold">{monthLabel(month)}</p>
+            <button type="button" onClick={() => setMonth(shiftMonth(month, 1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label="Next month">
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => <span key={day}>{day}</span>)}
+          </div>
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {Array.from({ length: offset }).map((_, index) => <span key={`single-blank-${index}`} />)}
+            {days.map((day) => {
+              const selected = day === value;
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  aria-pressed={selected}
+                  aria-label={dateLabel(day)}
+                  onClick={() => choose(day)}
+                  className={`h-9 rounded-lg text-sm font-medium transition ${
+                    selected ? "bg-brand text-brand-foreground" : day === today ? "bg-subtle text-foreground" : "hover:bg-subtle"
+                  }`}
+                >
+                  {Number(day.slice(-2))}
+                </button>
+              );
+            })}
+          </div>
+          {value && (
+            <div className="mt-3 flex justify-end border-t border-border pt-3">
+              <Button variant="secondary" onClick={() => choose("")}>Clear date</Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function DateRangePicker({ from, to, onApply, align = "start", className = "", compact = false, allowAll = true }: DateRangePickerProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);

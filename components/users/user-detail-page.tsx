@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { PageHeader } from "@/components/dashboard/page-header";
+import { ConfigPageHeader, ErrorState, Icon } from "@/components/dashboard/screen-kit";
 import { Button } from "@/components/ui/button";
 import { Modal, ModalActions } from "@/components/ui/modal";
 import { Field } from "@/components/ui/field";
@@ -26,6 +26,44 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
+function shortId(value: string) {
+  if (value.length <= 16) return value;
+  return `${value.slice(0, 8)}...${value.slice(-6)}`;
+}
+
+function CopyValue({ value, display = value, mono = false }: { value: string; display?: string; mono?: boolean }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <span className="inline-flex min-w-0 items-center justify-end gap-1.5">
+      <span title={value} className={`min-w-0 truncate ${mono ? "font-mono text-xs" : ""}`}>{display}</span>
+      <button
+        type="button"
+        title="Copy"
+        aria-label="Copy"
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1400);
+          } catch {}
+        }}
+        className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-subtle hover:text-foreground"
+      >
+        <Icon name={copied ? "check" : "copy"} className="size-3.5" />
+      </button>
+    </span>
+  );
+}
+
+function fullName(user: { first_name: string; last_name: string; email: string }) {
+  return [user.first_name, user.last_name].filter(Boolean).join(" ") || user.email;
+}
+
+function initials(user: { first_name: string; last_name: string; email: string }) {
+  const letters = `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.trim();
+  return (letters || user.email.charAt(0)).toUpperCase();
+}
+
 export function UserDetailPage({ id }: { id: string }) {
   const { href, t } = useI18n();
   const toast = useToast();
@@ -42,88 +80,135 @@ export function UserDetailPage({ id }: { id: string }) {
   const onError = (error: unknown) => toast.error(error instanceof Error ? error.message : t("api.genericFailure"));
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
-      <PageHeader title={t("users.detailTitle")} description={target ? [target.first_name, target.last_name].filter(Boolean).join(" ") || target.email : undefined} />
+    <div className="space-y-5">
+      <ConfigPageHeader
+        icon={target?.user_type === "admin" ? "idCard" : "users"}
+        title={t("users.detailTitle")}
+        backHref={target?.user_type === "admin" ? "/staff" : target?.user_type === "customer" ? "/customers" : "/users"}
+        backLabel={target?.user_type === "admin" ? t("nav.staff") : target?.user_type === "customer" ? t("nav.customers") : t("users.title")}
+        description={target ? fullName(target) : undefined}
+      />
 
       {query.isLoading ? (
-        <div className="h-72 animate-pulse rounded-xl border border-border bg-subtle/50" />
+        <div className="h-72 animate-pulse rounded-2xl border border-border bg-subtle/40" />
       ) : query.isError ? (
-        <section className="rounded-xl border border-border bg-surface p-8 text-center shadow-card">
-          <p className="text-sm text-muted">{query.error.message}</p>
-          <Button className="mt-4" variant="secondary" onClick={() => query.refetch()}>{t("common.tryAgain")}</Button>
+        <section className="rounded-2xl border border-border bg-surface shadow-card">
+          <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         </section>
       ) : target ? (
         <>
-          <section className="space-y-1 rounded-xl border border-border bg-surface p-5 shadow-card sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-              <div>
-                <h2 className="text-lg font-semibold">{[target.first_name, target.last_name].filter(Boolean).join(" ") || target.email}</h2>
-                <p className="text-sm text-muted">{target.email}</p>
+          <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex min-w-0 items-start gap-4">
+              <span aria-hidden className="flex size-16 shrink-0 items-center justify-center rounded-full bg-brand-soft text-2xl font-semibold text-brand">{initials(target)}</span>
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl font-semibold tracking-tight">{fullName(target)}</h1>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  <UserStatusBadge user={target} />
+                  <span className="rounded-full bg-subtle px-2.5 py-0.5 text-xs font-medium capitalize text-muted">{target.user_type === "admin" ? t("users.admin") : t("users.customer")}</span>
+                </div>
+                <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+                  <span className="inline-flex min-w-0 items-center gap-1"><Icon name="mail" className="size-3.5 shrink-0" /><CopyValue value={target.email} /></span>
+                  <span className="inline-flex items-center gap-1"><Icon name="phone" className="size-3.5" /><CopyValue value={target.phone_number} /></span>
+                </p>
               </div>
-              <UserStatusBadge user={target} />
             </div>
-            <div className="divide-y divide-border">
-              <Row label={t("users.accountId")} value={<span className="font-mono text-xs">{target.id}</span>} />
-              <Row label={t("users.phone")} value={target.phone_number} />
-              <Row label={t("users.userType")} value={target.user_type === "admin" ? t("users.admin") : t("users.customer")} />
-              <Row label={t("users.twoFactor")} value={target.is_two_factor_enabled ? t("users.twoFactorEnabled") : t("users.twoFactorDisabled")} />
-              <Row label={t("security.passkeys")} value={target.is_passwordless_enabled ? t("users.passkeysEnabled") : t("common.no")} />
-              <Row label={t("users.lastLogin")} value={formatDateTime(target.last_login_at) ?? t("common.never")} />
-              <Row label={t("users.createdAt")} value={formatDateTime(target.created_at)} />
-              {target.is_suspended && <Row label={t("users.suspendedReasonLabel")} value={target.suspended_reason ?? "—"} />}
-              {target.is_suspended && <Row label={t("users.suspendedSince")} value={formatDateTime(target.suspended_at)} />}
-              {target.is_deleted && <Row label={t("users.deletedSince")} value={formatDateTime(target.deleted_at)} />}
-              {target.is_invite_pending && <Row label={t("users.inviteSuccess")} value={formatDateTime(target.invited_at)} />}
-            </div>
-          </section>
-
-          <section className="space-y-3 rounded-xl border border-border bg-surface p-5 shadow-card sm:p-6">
-            <h3 className="text-sm font-semibold">{t("common.actions")}</h3>
-            {isSelf && <p className="text-xs text-muted">{t("users.cannotActOnSelf")}</p>}
-            <div className="flex flex-wrap gap-2">
-              <Link href={href(`/audit-trail?user_id=${target.id}`)} className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-medium transition hover:bg-subtle">
+            <div className="flex flex-wrap items-center gap-2">
+              <Link href={href(`/audit-trail?user_id=${target.id}`)} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium transition hover:bg-subtle">
+                <Icon name="shield" className="size-4" />
                 {t("users.viewAuditTrail")}
               </Link>
-              {target.is_invite_pending && (
-                <Button
-                  variant="secondary"
-                  loading={resendInvite.isPending}
-                  onClick={() => resendInvite.mutate(target.id, { onSuccess: () => toast.success(t("users.resendInviteSuccess")), onError })}
-                >
-                  {t("users.resendInvite")}
-                </Button>
-              )}
-              {!target.is_deleted && (target.is_suspended ? (
-                <Button
-                  variant="secondary"
-                  disabled={isSelf}
-                  loading={unsuspend.isPending}
-                  onClick={() => unsuspend.mutate(target.id, { onSuccess: () => toast.success(t("users.unsuspendSuccess")), onError })}
-                >
-                  {t("users.unsuspend")}
-                </Button>
-              ) : (
-                <Button variant="secondary" disabled={isSelf} onClick={() => setSuspendOpen(true)}>{t("users.suspend")}</Button>
-              ))}
-              {target.is_deleted ? (
-                <Button
-                  variant="secondary"
-                  loading={restore.isPending}
-                  onClick={() => restore.mutate(target.id, { onSuccess: () => toast.success(t("users.restoreSuccess")), onError })}
-                >
-                  {t("users.restore")}
-                </Button>
-              ) : (
-                <Button variant="danger" disabled={isSelf} onClick={() => setDeleteOpen(true)}>{t("users.deleteUser")}</Button>
-              )}
             </div>
-          </section>
+          </header>
+
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <div className="min-w-0 space-y-5">
+              <section className="space-y-3 rounded-2xl border border-border bg-surface p-5 shadow-card sm:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+                  <h2 className="text-sm font-semibold">Lifecycle</h2>
+                  <UserStatusBadge user={target} />
+                </div>
+                <div className="divide-y divide-border">
+                  <Row label={t("users.lastLogin")} value={formatDateTime(target.last_login_at) ?? t("common.never")} />
+                  <Row label={t("users.createdAt")} value={formatDateTime(target.created_at)} />
+                  <Row label="Last updated" value={formatDateTime(target.updated_at)} />
+                  {target.is_suspended && <Row label={t("users.suspendedReasonLabel")} value={target.suspended_reason ?? "—"} />}
+                  {target.is_suspended && <Row label={t("users.suspendedSince")} value={formatDateTime(target.suspended_at)} />}
+                  {target.is_deleted && <Row label={t("users.deletedSince")} value={formatDateTime(target.deleted_at)} />}
+                  {target.is_invite_pending && <Row label={t("users.inviteSuccess")} value={formatDateTime(target.invited_at)} />}
+                  {target.invite_accepted_at && <Row label="Invite accepted" value={formatDateTime(target.invite_accepted_at)} />}
+                </div>
+              </section>
+
+              <section className="space-y-3 rounded-2xl border border-border bg-surface p-5 shadow-card sm:p-6">
+                <h3 className="text-sm font-semibold">{t("common.actions")}</h3>
+                {isSelf && <p className="text-xs text-muted">{t("users.cannotActOnSelf")}</p>}
+                <div className="flex flex-wrap gap-2">
+                  {target.is_invite_pending && (
+                    <Button
+                      variant="secondary"
+                      loading={resendInvite.isPending}
+                      onClick={() => resendInvite.mutate(target.id, { onSuccess: () => toast.success(t("users.resendInviteSuccess")), onError })}
+                    >
+                      {t("users.resendInvite")}
+                    </Button>
+                  )}
+                  {!target.is_deleted && (target.is_suspended ? (
+                    <Button
+                      variant="secondary"
+                      disabled={isSelf}
+                      loading={unsuspend.isPending}
+                      onClick={() => unsuspend.mutate(target.id, { onSuccess: () => toast.success(t("users.unsuspendSuccess")), onError })}
+                    >
+                      {t("users.unsuspend")}
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" disabled={isSelf} onClick={() => setSuspendOpen(true)}>{t("users.suspend")}</Button>
+                  ))}
+                  {target.is_deleted ? (
+                    <Button
+                      variant="secondary"
+                      loading={restore.isPending}
+                      onClick={() => restore.mutate(target.id, { onSuccess: () => toast.success(t("users.restoreSuccess")), onError })}
+                    >
+                      {t("users.restore")}
+                    </Button>
+                  ) : (
+                    <Button variant="danger" disabled={isSelf} onClick={() => setDeleteOpen(true)}>{t("users.deleteUser")}</Button>
+                  )}
+                </div>
+              </section>
+            </div>
+
+            <aside className="space-y-5 lg:sticky lg:top-20">
+              <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
+                <header className="flex items-center gap-2 border-b border-border px-4 py-3 sm:px-5">
+                  <Icon name="user" className="size-4 text-muted" />
+                  <h2 className="text-sm font-semibold">Account</h2>
+                </header>
+                <dl className="divide-y divide-border px-4 sm:px-5">
+                  <Row label={t("users.accountId")} value={<CopyValue value={target.id} display={shortId(target.id)} mono />} />
+                  <Row label={t("users.phone")} value={<CopyValue value={target.phone_number} />} />
+                  <Row label={t("users.email")} value={<CopyValue value={target.email} />} />
+                  <Row label={t("users.userType")} value={target.user_type === "admin" ? t("users.admin") : t("users.customer")} />
+                </dl>
+              </section>
+
+              <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
+                <header className="flex items-center gap-2 border-b border-border px-4 py-3 sm:px-5">
+                  <Icon name="lock" className="size-4 text-muted" />
+                  <h2 className="text-sm font-semibold">Security</h2>
+                </header>
+                <dl className="divide-y divide-border px-4 sm:px-5">
+                  <Row label={t("users.twoFactor")} value={target.is_two_factor_enabled ? t("users.twoFactorEnabled") : t("users.twoFactorDisabled")} />
+                  <Row label="2FA method" value={target.two_factor_method ?? "—"} />
+                  <Row label={t("security.passkeys")} value={target.is_passwordless_enabled ? t("users.passkeysEnabled") : t("common.no")} />
+                </dl>
+                <p className="border-t border-border px-4 py-3 text-xs text-muted sm:px-5">Security fields reflect the latest account response from the API.</p>
+              </section>
+            </aside>
+          </div>
         </>
       ) : null}
-
-      <Link href={href("/users")} className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-medium transition hover:bg-subtle">
-        {t("users.backToList")}
-      </Link>
 
       <Modal open={suspendOpen} onClose={() => { setSuspendOpen(false); setReason(""); }} title={t("users.suspendConfirmTitle")}>
         <p className="text-sm text-muted">{t("users.suspendConfirmBody")}</p>

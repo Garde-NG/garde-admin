@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PageHeader } from "@/components/dashboard/page-header";
-import { Button } from "@/components/ui/button";
+import { ConfigPageHeader, ErrorState } from "@/components/dashboard/screen-kit";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/provider";
 import { useAuditLog } from "@/lib/query/audit-logs";
@@ -27,18 +26,17 @@ export function AuditLogDetailPage({ id }: { id: string }) {
   const metadataEntries = entry ? Object.entries(entry.event_metadata ?? {}) : [];
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
-      <PageHeader title={t("auditTrail.detailTitle")} />
+    <div className="mx-auto max-w-4xl space-y-5">
+      <ConfigPageHeader icon="shield" title={t("auditTrail.detailTitle")} backHref="/audit-trail" backLabel={t("auditTrail.title")} />
 
       {query.isLoading ? (
-        <div className="h-64 animate-pulse rounded-xl border border-border bg-subtle/50" />
+        <div className="h-64 animate-pulse rounded-2xl border border-border bg-subtle/40" />
       ) : query.isError ? (
-        <section className="rounded-xl border border-border bg-surface p-8 text-center shadow-card">
-          <p className="text-sm text-muted">{query.error.message}</p>
-          <Button className="mt-4" variant="secondary" onClick={() => query.refetch()}>{t("common.tryAgain")}</Button>
+        <section className="rounded-2xl border border-border bg-surface shadow-card">
+          <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         </section>
       ) : entry ? (
-        <section className="space-y-1 rounded-xl border border-border bg-surface p-5 shadow-card sm:p-6">
+        <section className="space-y-1 rounded-2xl border border-border bg-surface p-5 shadow-card sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
             <div>
               <h2 className="text-lg font-semibold">{entry.description}</h2>
@@ -75,10 +73,6 @@ export function AuditLogDetailPage({ id }: { id: string }) {
           )}
         </section>
       ) : null}
-
-      <Link href={href("/audit-trail")} className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-medium transition hover:bg-subtle">
-        {t("auditTrail.backToList")}
-      </Link>
     </div>
   );
 }

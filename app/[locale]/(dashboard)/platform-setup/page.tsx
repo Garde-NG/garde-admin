@@ -1,8 +1,6 @@
-import type { Metadata } from "next";
-import { CountriesPage } from "@/components/platform-setup/countries-page";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Platform Setup" };
-
-export default function Page() {
-  return <CountriesPage />;
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect(`/${locale}/configuration`);
 }

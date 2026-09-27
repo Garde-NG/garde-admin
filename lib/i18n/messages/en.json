@@ -113,10 +113,14 @@
     "openMenu": "Open menu",
     "skipToContent": "Skip to content",
     "platform": "Platform",
+    "people": "People",
     "legalDocuments": "Legal Documents",
     "auditTrail": "Audit Trail",
     "users": "Users",
-    "platformSetup": "Platform Setup"
+    "customers": "Customers",
+    "staff": "Staff",
+    "platformSetup": "Platform Setup",
+    "configuration": "Configuration"
   },
   "shell": {
     "accountMenu": "Account menu",

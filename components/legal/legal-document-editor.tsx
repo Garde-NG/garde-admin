@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-range-picker";
 import { useI18n } from "@/lib/i18n/provider";
 import { locales, localeLabels, type Locale } from "@/lib/i18n/config";
 import type { LegalDocumentType, LegalTranslation } from "@/lib/legal/types";
@@ -66,7 +67,7 @@ export function LegalDocumentEditor({ state, onChange, lockDocumentType = false,
           <option value="privacy_policy">{t("legalDocuments.privacyPolicy")}</option>
         </Select>
         <Field label={t("legalDocuments.version")} required disabled={disabled} placeholder="1.1" hint={t("legalDocuments.versionRequired")} value={state.version} onChange={(e) => onChange({ ...state, version: e.target.value })} />
-        <Field label={t("legalDocuments.effectiveDate")} type="date" disabled={disabled} hint={t("legalDocuments.effectiveDateHint")} value={state.effective_date} onChange={(e) => onChange({ ...state, effective_date: e.target.value })} />
+        <DatePicker label={t("legalDocuments.effectiveDate")} disabled={disabled} hint={t("legalDocuments.effectiveDateHint")} value={state.effective_date} onChange={(effective_date) => onChange({ ...state, effective_date })} />
       </div>
 
       <div>

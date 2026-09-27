@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { PageHeader } from "@/components/dashboard/page-header";
+import { ConfigPageHeader, EmptyState, ErrorState, IconButton, SearchInput, SkeletonRows } from "@/components/dashboard/screen-kit";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Pagination } from "@/components/ui/pagination";
@@ -13,6 +13,12 @@ import { useCountries, useCountryActions } from "@/lib/query/countries";
 import { CountryModal } from "@/components/platform-setup/country-modal";
 import type { Country } from "@/lib/countries/types";
 
+const ROW_GRID = "md:grid-cols-[minmax(0,1.5fr)_6rem_7rem_minmax(0,1fr)_5.5rem_5.5rem]";
+
+function flagUrl(country: Country) {
+  return `https://flagcdn.com/w40/${country.iso2_code.toLowerCase()}.png`;
+}
+
 export function CountriesPage() {
   const { t } = useI18n();
   const toast = useToast();
@@ -22,8 +28,21 @@ export function CountriesPage() {
   const { remove, update } = useCountryActions();
 
   const page = Math.max(1, Number(searchParams.get("page") ?? 1) || 1);
+  const search = searchParams.get("q") ?? "";
+  const [searchDraft, setSearchDraft] = useState(search);
   const query = useCountries({ page, pageSize: 20 });
-  const items = useMemo(() => query.data?.items ?? [], [query.data?.items]);
+  const items = useMemo(() => {
+    const value = search.trim().toLowerCase();
+    const all = query.data?.items ?? [];
+    if (!value) return all;
+    return all.filter((country) =>
+      [country.name, country.iso2_code, country.iso3_code, country.phone_code, country.currency_code, country.currency_name]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(value),
+    );
+  }, [query.data?.items, search]);
   const totalPages = query.data?.meta.total_pages ?? 1;
 
   const [editing, setEditing] = useState<Country | null>(null);
@@ -43,64 +62,77 @@ export function CountriesPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title={t("platformSetup.title")} description={t("platformSetup.description")} />
+      <ConfigPageHeader
+        icon="globe"
+        title="Countries"
+        description={t("platformSetup.description")}
+        actions={<Button onClick={() => { setEditing(null); setModalOpen(true); }}>{t("platformSetup.newCountry")}</Button>}
+      />
 
-      <div className="flex justify-end">
-        <Button onClick={() => { setEditing(null); setModalOpen(true); }}>{t("platformSetup.newCountry")}</Button>
-      </div>
-
-      <section className="overflow-hidden rounded-xl border border-border bg-surface shadow-card">
+      <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
+        <form
+          className="border-b border-border p-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setParams({ q: searchDraft, page: 1 });
+          }}
+        >
+          <SearchInput value={searchDraft} onChange={setSearchDraft} placeholder="Search name, ISO code, dialing code or currency" label="Search countries" />
+        </form>
         {query.isLoading ? (
-          <div className="divide-y divide-border">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="h-14 animate-pulse bg-subtle/50" />
-            ))}
-          </div>
+          <SkeletonRows rows={7} columns={5} />
         ) : query.isError ? (
-          <div className="p-8 text-center">
-            <p className="text-sm text-muted">{query.error.message}</p>
-            <Button className="mt-4" variant="secondary" onClick={() => query.refetch()}>{t("common.tryAgain")}</Button>
-          </div>
+          <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         ) : items.length === 0 ? (
-          <div className="p-10 text-center">
-            <p className="text-sm font-medium">{t("platformSetup.noResults")}</p>
-          </div>
+          <EmptyState
+            icon="globe"
+            title={search ? "No countries match your search" : t("platformSetup.noResults")}
+            action={search ? <Button variant="secondary" onClick={() => { setSearchDraft(""); setParams({ q: null, page: 1 }); }}>Clear search</Button> : undefined}
+          >
+            {search ? "Try a different name, code or currency." : "Countries you add will appear here."}
+          </EmptyState>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-xs uppercase tracking-wide text-muted">
-                <tr>
-                  <th className="px-4 py-3 font-medium sm:px-6">{t("platformSetup.name")}</th>
-                  <th className="px-4 py-3 font-medium">{t("platformSetup.iso2")}</th>
-                  <th className="px-4 py-3 font-medium">{t("platformSetup.phoneCode")}</th>
-                  <th className="px-4 py-3 font-medium">{t("platformSetup.currencyCode")}</th>
-                  <th className="px-4 py-3 font-medium">{t("common.status")}</th>
-                  <th className="px-4 py-3 font-medium sm:px-6 text-right">{t("common.actions")}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
+          <>
+            <div className={`hidden gap-4 bg-subtle/70 px-6 py-3 text-xs font-semibold uppercase text-muted md:grid ${ROW_GRID}`}>
+              <span>{t("platformSetup.name")}</span>
+              <span>{t("platformSetup.iso2")}</span>
+              <span>{t("platformSetup.phoneCode")}</span>
+              <span>{t("platformSetup.currencyCode")}</span>
+              <span>{t("common.status")}</span>
+              <span className="text-right">{t("common.actions")}</span>
+            </div>
+            <ul className="divide-y divide-border">
                 {items.map((country) => (
-                  <tr key={country.id} className="transition hover:bg-subtle/60">
-                    <td className="px-4 py-3 sm:px-6">
-                      <span className="font-medium">{country.flag_emoji} {country.name}</span>
-                    </td>
-                    <td className="px-4 py-3 text-muted">{country.iso2_code}</td>
-                    <td className="px-4 py-3 text-muted">{country.phone_code}</td>
-                    <td className="px-4 py-3 text-muted">{country.currency_symbol} {country.currency_code}</td>
-                    <td className="px-4 py-3">
-                      <Badge tone={country.is_active ? "success" : "neutral"}>{country.is_active ? t("platformSetup.active") : t("platformSetup.inactive")}</Badge>
-                    </td>
-                    <td className="px-4 py-3 sm:px-6">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" onClick={() => { setEditing(country); setModalOpen(true); }}>{t("common.edit")}</Button>
-                        <Button variant="ghost" className="text-danger hover:bg-danger-soft" onClick={() => setDeleteTarget(country)}>{t("common.delete")}</Button>
+                  <li key={country.id} className={`grid items-center gap-x-4 gap-y-2 px-4 py-4 sm:px-6 ${ROW_GRID} ${country.is_active ? "" : "bg-subtle/30"}`}>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-9 min-w-11 shrink-0 items-center justify-center rounded-lg bg-brand-soft px-2 ring-1 ring-brand/10">
+                        <span
+                          aria-hidden
+                          style={{ backgroundImage: `url(${flagUrl(country)})` }}
+                          className="h-5 w-7 rounded-sm bg-cover bg-center shadow-sm"
+                        />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{country.name}</p>
+                        <p className="text-xs text-muted md:hidden">{country.iso2_code} · {country.phone_code}</p>
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                    <p className="font-mono text-sm text-muted md:text-foreground">{country.iso2_code}</p>
+                    <p className="text-sm text-muted md:text-foreground">{country.phone_code}</p>
+                    <p className="text-sm">
+                      {country.currency_name} <span className="font-mono text-muted">({country.currency_symbol} {country.currency_code})</span>
+                    </p>
+                    <div>
+                      <Badge tone={country.is_active ? "success" : "neutral"}>{country.is_active ? t("platformSetup.active") : t("platformSetup.inactive")}</Badge>
+                    </div>
+                    <div className="-mx-1.5 flex justify-end gap-0.5 md:mx-0">
+                      <IconButton label={`${t("common.edit")} ${country.name}`} icon="pencil" onClick={() => { setEditing(country); setModalOpen(true); }} />
+                      <IconButton label={`${t("common.delete")} ${country.name}`} icon="trash" tone="danger" onClick={() => setDeleteTarget(country)} />
+                    </div>
+                  </li>
                 ))}
-              </tbody>
-            </table>
-          </div>
+            </ul>
+          </>
         )}
       </section>
 
