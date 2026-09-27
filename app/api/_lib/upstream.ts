@@ -13,7 +13,7 @@ interface UpstreamOptions {
   body?: unknown;
   accessToken?: string;
   locale?: Locale;
-  method?: "GET" | "POST";
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
   search?: URLSearchParams;
 }
 

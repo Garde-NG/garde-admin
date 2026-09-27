@@ -1,0 +1,21 @@
+import type { MessagePath } from "@/lib/i18n/provider";
+
+export const AUDIT_EVENT_TYPES: { value: string; labelKey: MessagePath }[] = [
+  { value: "signup", labelKey: "auditTrail.eventSignup" },
+  { value: "login_success", labelKey: "auditTrail.eventLoginSuccess" },
+  { value: "login_failed", labelKey: "auditTrail.eventLoginFailed" },
+  { value: "login_locked", labelKey: "auditTrail.eventLoginLocked" },
+  { value: "two_factor_changed", labelKey: "auditTrail.eventTwoFactorChanged" },
+  { value: "token_refreshed", labelKey: "auditTrail.eventTokenRefreshed" },
+  { value: "logout", labelKey: "auditTrail.eventLogout" },
+  { value: "password_changed", labelKey: "auditTrail.eventPasswordChanged" },
+  { value: "password_change_failed", labelKey: "auditTrail.eventPasswordChangeFailed" },
+  { value: "password_reset_requested", labelKey: "auditTrail.eventPasswordResetRequested" },
+  { value: "password_reset_completed", labelKey: "auditTrail.eventPasswordResetCompleted" },
+  { value: "password_reset_failed", labelKey: "auditTrail.eventPasswordResetFailed" },
+  { value: "account_closed", labelKey: "auditTrail.eventAccountClosed" },
+  { value: "account_close_failed", labelKey: "auditTrail.eventAccountCloseFailed" },
+  { value: "account_restored", labelKey: "auditTrail.eventAccountRestored" },
+  { value: "account_restore_failed", labelKey: "auditTrail.eventAccountRestoreFailed" },
+  { value: "webauthn_registered", labelKey: "auditTrail.eventWebauthnRegistered" },
+];

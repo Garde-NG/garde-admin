@@ -54,7 +54,8 @@ export function useNotifications(params: NotificationListParams = {}) {
 export function useNotificationActions() {
   const client = useQueryClient();
   const patchItem = (item: NotificationItem) => {
-    client.setQueriesData<NotificationList>({ queryKey: notificationsKey }, (current) => current ? {
+    client.setQueryData([...notificationsKey, "detail", item.id], item);
+    client.setQueriesData<NotificationList>({ queryKey: notificationsKey }, (current) => current && Array.isArray(current.items) ? {
       ...current,
       items: current.items.map((entry) => entry.id === item.id ? item : entry),
     } : current);

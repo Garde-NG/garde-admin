@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/provider";
@@ -23,10 +23,14 @@ export function NotificationDetailPage({ id }: { id: string }) {
   const query = useNotification(id);
   const { markRead } = useNotificationActions();
   const notification = query.data;
+  const markedIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (notification && !notification.is_read) markRead.mutate(notification.id);
-  }, [markRead, notification]);
+    if (!notification || notification.is_read) return;
+    if (markedIdRef.current === notification.id) return;
+    markedIdRef.current = notification.id;
+    markRead.mutate(notification.id);
+  }, [notification, markRead]);
 
   const actionPath = relatedPath(notification?.web_route ?? null);
 

@@ -41,6 +41,7 @@ export function NotificationBell() {
   const [liveStatus, setLiveStatus] = useState<"connected" | "reconnecting" | "error">("reconnecting");
   const retry = useRef(0);
   const closedByUnmount = useRef(false);
+  const triedRefreshAfter4401 = useRef(false);
 
   const items = useMemo(() => query.data?.items ?? [], [query.data?.items]);
   const unread = useMemo(() => items.filter((item) => !item.is_read).length, [items]);
@@ -56,6 +57,7 @@ export function NotificationBell() {
         socket = new WebSocket(url);
         socket.onopen = () => {
           retry.current = 0;
+          triedRefreshAfter4401.current = false;
           setLiveStatus("connected");
           void client.invalidateQueries({ queryKey: notificationsKey });
         };
@@ -71,6 +73,14 @@ export function NotificationBell() {
         socket.onclose = (event) => {
           if (closedByUnmount.current) return;
           if (event.code === 4401) {
+            // Token was stale at connect time. `getNotificationWebSocketUrl()` mints a fresh
+            // token (refreshing it server-side if needed), so try once more before giving up.
+            if (!triedRefreshAfter4401.current) {
+              triedRefreshAfter4401.current = true;
+              setLiveStatus("reconnecting");
+              void connect();
+              return;
+            }
             setLiveStatus("error");
             void client.invalidateQueries({ queryKey: notificationsKey });
             return;
