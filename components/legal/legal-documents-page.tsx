@@ -14,13 +14,13 @@ import type { LegalDocument } from "@/lib/legal/types";
 
 const ROW_GRID = "md:grid-cols-[minmax(0,1.4fr)_6rem_7rem_8rem_8rem]";
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, locale: string) {
   if (!value) return "—";
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(value));
 }
 
 export function LegalDocumentsPage() {
-  const { href, t } = useI18n();
+  const { href, t, locale } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -66,7 +66,7 @@ export function LegalDocumentsPage() {
               <option value="archived">{t("legalDocuments.statusArchived")}</option>
           </Select>
           <Button className="w-full sm:col-span-2 lg:col-span-1 lg:w-auto" variant="secondary" onClick={() => setParams({ document_type: null, status: null, page: 1 })}>
-            Reset filters
+            {t("legalDocuments.resetFilters")}
           </Button>
         </div>
       </section>
@@ -78,7 +78,7 @@ export function LegalDocumentsPage() {
           <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         ) : items.length === 0 ? (
           <EmptyState icon="clipboard" title={t("legalDocuments.noResults")}>
-            Create a draft or adjust your filters.
+            {t("legalDocuments.emptyHint")}
           </EmptyState>
         ) : (
           <>
@@ -95,12 +95,12 @@ export function LegalDocumentsPage() {
                     <Link href={href(`/legal-documents/${doc.id}`)} className={`grid items-center gap-x-4 gap-y-2 px-4 py-4 transition hover:bg-subtle/50 focus-visible:bg-subtle/50 focus-visible:outline-none sm:px-6 ${ROW_GRID}`}>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{doc.document_type === "terms_and_conditions" ? t("legalDocuments.termsAndConditions") : t("legalDocuments.privacyPolicy")}</p>
-                        <p className="text-xs text-muted md:hidden">v{doc.version} · {formatDate(doc.effective_date)}</p>
+                        <p className="text-xs text-muted md:hidden">v{doc.version} · {formatDate(doc.effective_date, locale)}</p>
                       </div>
                       <p className="font-mono text-sm text-muted md:text-foreground">v{doc.version}</p>
                       <div><LegalStatusBadge status={doc.status} /></div>
-                      <p className="text-sm text-muted">{formatDate(doc.effective_date)}</p>
-                      <p className="text-sm text-muted">{formatDate(doc.published_at)}</p>
+                      <p className="text-sm text-muted">{formatDate(doc.effective_date, locale)}</p>
+                      <p className="text-sm text-muted">{formatDate(doc.published_at, locale)}</p>
                     </Link>
                   </li>
                 ))}

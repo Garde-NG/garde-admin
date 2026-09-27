@@ -35,7 +35,58 @@
     "yes": "Yes",
     "no": "No",
     "optional": "Optional",
-    "id": "ID"
+    "id": "ID",
+    "loading": "Loading",
+    "couldntLoad": "Couldn't load this",
+    "noOptions": "No options",
+    "copy": "Copy",
+    "open": "Open",
+    "clearSearch": "Clear search",
+    "tryAnotherSearch": "Try another search or remove a filter."
+  },
+  "theme": {
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "dateRangePicker": {
+    "selectDate": "Select a date",
+    "clearDate": "Clear date",
+    "dateRange": "Date range",
+    "dateRangePrefix": "Date range: ",
+    "chooseDateRange": "Choose date range",
+    "quickRanges": "Quick ranges",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "allTime": "All time",
+    "to": "to",
+    "from": "From",
+    "until": "Until",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last7Days": "Last 7 days",
+    "thisMonth": "This month",
+    "apply": "Apply",
+    "weekdaySun": "Su",
+    "weekdayMon": "Mo",
+    "weekdayTue": "Tu",
+    "weekdayWed": "We",
+    "weekdayThu": "Th",
+    "weekdayFri": "Fr",
+    "weekdaySat": "Sa",
+    "monthJanuary": "January",
+    "monthFebruary": "February",
+    "monthMarch": "March",
+    "monthApril": "April",
+    "monthMay": "May",
+    "monthJune": "June",
+    "monthJuly": "July",
+    "monthAugust": "August",
+    "monthSeptember": "September",
+    "monthOctober": "October",
+    "monthNovember": "November",
+    "monthDecember": "December"
   },
   "api": {
     "accountServiceUnavailable": "The account service is temporarily unavailable.",
@@ -223,7 +274,11 @@
     "resetToday": "Today",
     "previous": "Previous",
     "next": "Next",
-    "page": "Page"
+    "page": "Page",
+    "searchPlaceholder": "Search notifications",
+    "allNotifications": "All notifications",
+    "emptyHint": "New notifications appear here as they arrive.",
+    "noMatch": "No notifications match"
   },
   "legalDocuments": {
     "title": "Legal Documents",
@@ -272,7 +327,9 @@
     "versionRequired": "Enter a version, e.g. 1.1",
     "effectiveDateHint": "Informational target date — publishing (below) is what makes it live.",
     "translationRequired": "Provide a title and content for every language.",
-    "noPublishedVersion": "No published version yet"
+    "noPublishedVersion": "No published version yet",
+    "resetFilters": "Reset filters",
+    "emptyHint": "Create a draft or adjust your filters."
   },
   "auditTrail": {
     "title": "Audit Trail",
@@ -314,7 +371,13 @@
     "eventAccountCloseFailed": "Account close failed",
     "eventAccountRestored": "Account restored",
     "eventAccountRestoreFailed": "Account restore failed",
-    "eventWebauthnRegistered": "Passkey registered"
+    "eventWebauthnRegistered": "Passkey registered",
+    "loadingSelectedUser": "Loading selected user...",
+    "allUsers": "All users",
+    "searchPlaceholder": "Search name, email or phone",
+    "searching": "Searching...",
+    "noUserMatches": "No users match your search.",
+    "noResultsHint": "Try a wider date range or remove a filter."
   },
   "users": {
     "title": "Users",
@@ -373,7 +436,21 @@
     "restore": "Restore account",
     "restoreSuccess": "Account restored.",
     "deletedSince": "Deleted since",
-    "cannotActOnSelf": "You can't perform this action on your own account."
+    "cannotActOnSelf": "You can't perform this action on your own account.",
+    "staffDescription": "Admins and staff who run the dashboard. Invite colleagues, review security and manage access.",
+    "customerDescription": "Customers on the platform. Search, inspect account status and review security posture.",
+    "noResultsHint": "Try another search or remove a filter.",
+    "columnPerson": "Person",
+    "columnContact": "Contact",
+    "columnSecurity": "Security",
+    "twoFaOn": "2FA on",
+    "twoFaOff": "2FA off",
+    "sectionLifecycle": "Lifecycle",
+    "sectionAccount": "Account",
+    "lastUpdated": "Last updated",
+    "inviteAccepted": "Invite accepted",
+    "twoFactorMethod": "2FA method",
+    "securityFieldsHint": "Security fields reflect the latest account response from the API."
   },
   "platformSetup": {
     "title": "Platform Setup",
@@ -400,7 +477,16 @@
     "markInactiveInstead": "Mark inactive instead",
     "noResults": "No countries yet.",
     "loadError": "Unable to load countries.",
-    "currencyTranslations": "Currency name translations"
+    "currencyTranslations": "Currency name translations",
+    "hubTitle": "Configuration",
+    "hubDescription": "Everything that shapes how the platform runs. Countries are first here; future platform setup areas will join this page as cards.",
+    "countriesTitle": "Countries",
+    "countriesCardDescription": "Manage the country reference list used by currency, phone and locale-aware pickers across Garde.",
+    "searchPlaceholder": "Search name, ISO code, dialing code or currency",
+    "searchLabel": "Search countries",
+    "noMatch": "No countries match your search",
+    "noMatchHint": "Try a different name, code or currency.",
+    "emptyHint": "Countries you add will appear here."
   },
   "notFound": {
     "title": "Page not found",

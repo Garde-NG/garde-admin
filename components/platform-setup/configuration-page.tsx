@@ -26,7 +26,7 @@ function ConfigCard({
   stats: { label: string; value: string | undefined }[];
   badge?: string;
 }) {
-  const { href: localizedHref } = useI18n();
+  const { href: localizedHref, t } = useI18n();
   return (
     <Link
       href={localizedHref(href)}
@@ -52,7 +52,7 @@ function ConfigCard({
         ))}
       </dl>
       <span className="relative mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand">
-        Open
+        {t("common.open")}
         <Icon name="arrowRight" className="size-4 transition-transform group-hover:translate-x-1" />
       </span>
     </Link>
@@ -60,14 +60,15 @@ function ConfigCard({
 }
 
 export function ConfigurationPage() {
+  const { t } = useI18n();
   const countries = useCountries({ page: 1, pageSize: 20 });
 
   return (
     <div>
       <header className="mb-8 max-w-2xl">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Configuration</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("platformSetup.hubTitle")}</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted sm:text-base">
-          Everything that shapes how the platform runs. Countries are first here; future platform setup areas will join this page as cards.
+          {t("platformSetup.hubDescription")}
         </p>
       </header>
 
@@ -75,9 +76,9 @@ export function ConfigurationPage() {
         <ConfigCard
           href="/configuration/countries"
           icon="globe"
-          title="Countries"
-          description="Manage the country reference list used by currency, phone and locale-aware pickers across Garde."
-          stats={[{ label: "Countries", value: total(countries.data) }]}
+          title={t("platformSetup.countriesTitle")}
+          description={t("platformSetup.countriesCardDescription")}
+          stats={[{ label: t("platformSetup.countriesTitle"), value: total(countries.data) }]}
         />
       </div>
     </div>

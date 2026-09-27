@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useId, type ReactNode } from "react";
+import { useI18n } from "@/lib/i18n/provider";
 
 const PATHS = {
   arrowLeft: <path d="M19 12H5m6-6-6 6 6 6" />,
@@ -113,7 +114,7 @@ export function ConfigPageHeader({
   actions,
   showBackLink = true,
   backHref = "/configuration",
-  backLabel = "Configuration",
+  backLabel,
 }: {
   title: string;
   description?: ReactNode;
@@ -123,12 +124,14 @@ export function ConfigPageHeader({
   backHref?: string;
   backLabel?: string;
 }) {
+  const { t } = useI18n();
+  const resolvedBackLabel = backLabel ?? t("nav.configuration");
   return (
     <header className="mb-6 space-y-4">
       {showBackLink && (
         <Link href={backHref} className="inline-flex items-center gap-1.5 rounded-md py-1 text-sm font-medium text-muted transition hover:text-foreground pointer-coarse:py-2">
           <Icon name="arrowLeft" className="size-4" />
-          {backLabel}
+          {resolvedBackLabel}
         </Link>
       )}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -147,11 +150,13 @@ export function ConfigPageHeader({
   );
 }
 
-export function SearchInput({ value, onChange, placeholder, label = "Search" }: { value: string; onChange: (value: string) => void; placeholder: string; label?: string }) {
+export function SearchInput({ value, onChange, placeholder, label }: { value: string; onChange: (value: string) => void; placeholder: string; label?: string }) {
+  const { t } = useI18n();
   const id = useId();
+  const resolvedLabel = label ?? t("common.search");
   return (
     <div className="relative min-w-0">
-      <label htmlFor={id} className="sr-only">{label}</label>
+      <label htmlFor={id} className="sr-only">{resolvedLabel}</label>
       <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
       <input
         id={id}
@@ -199,8 +204,9 @@ export function IconButton({ label, icon, onClick, disabled, tone = "default" }:
 }
 
 export function SkeletonRows({ rows = 6, columns = 5 }: { rows?: number; columns?: number }) {
+  const { t } = useI18n();
   return (
-    <div role="status" aria-label="Loading" className="animate-pulse divide-y divide-border">
+    <div role="status" aria-label={t("common.loading")} className="animate-pulse divide-y divide-border">
       {Array.from({ length: rows }).map((_, row) => (
         <div key={row} className="flex items-center gap-4 px-4 py-4">
           {Array.from({ length: columns }).map((__, cell) => (
@@ -213,15 +219,16 @@ export function SkeletonRows({ rows = 6, columns = 5 }: { rows?: number; columns
 }
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col items-center px-6 py-12 text-center">
       <span aria-hidden className="flex size-12 items-center justify-center rounded-full bg-danger-soft text-danger">
         <Icon name="info" className="size-6" />
       </span>
-      <h3 className="mt-4 text-base font-semibold">Couldn&apos;t load this</h3>
+      <h3 className="mt-4 text-base font-semibold">{t("common.couldntLoad")}</h3>
       <p className="mt-1 max-w-sm text-sm text-muted">{message}</p>
       <button type="button" onClick={onRetry} className="mt-5 inline-flex h-10 items-center rounded-lg border border-border px-4 text-sm font-medium transition hover:bg-subtle">
-        Try again
+        {t("common.tryAgain")}
       </button>
     </div>
   );

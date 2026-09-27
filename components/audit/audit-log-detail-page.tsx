@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/provider";
 import { useAuditLog } from "@/lib/query/audit-logs";
 
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "full", timeStyle: "medium" }).format(new Date(value));
+function formatDateTime(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, { dateStyle: "full", timeStyle: "medium" }).format(new Date(value));
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -20,7 +20,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export function AuditLogDetailPage({ id }: { id: string }) {
-  const { href, t } = useI18n();
+  const { href, t, locale } = useI18n();
   const query = useAuditLog(id);
   const entry = query.data;
   const metadataEntries = entry ? Object.entries(entry.event_metadata ?? {}) : [];
@@ -40,14 +40,14 @@ export function AuditLogDetailPage({ id }: { id: string }) {
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
             <div>
               <h2 className="text-lg font-semibold">{entry.description}</h2>
-              <p className="text-sm text-muted">{formatDateTime(entry.created_at)}</p>
+              <p className="text-sm text-muted">{formatDateTime(entry.created_at, locale)}</p>
             </div>
             <Badge tone={entry.success ? "success" : "danger"}>{entry.success ? t("auditTrail.outcomeSuccess") : t("auditTrail.outcomeFailed")}</Badge>
           </div>
           <div className="divide-y divide-border">
             <Row label={t("auditTrail.columnAccount")} value={entry.email || t("auditTrail.unknownAccount")} />
             {entry.user_id && <Row label={t("users.accountId")} value={<span className="font-mono text-xs">{entry.user_id}</span>} />}
-            <Row label="Event type" value={<span className="font-mono text-xs">{entry.event_type}</span>} />
+            <Row label={t("auditTrail.filterEventType")} value={<span className="font-mono text-xs">{entry.event_type}</span>} />
             <Row label={t("auditTrail.columnIp")} value={entry.ip_address ?? "—"} />
             <Row label={t("auditTrail.columnDevice")} value={<span className="break-all text-right">{entry.user_agent ?? "—"}</span>} />
           </div>

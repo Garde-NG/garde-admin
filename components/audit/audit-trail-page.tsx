@@ -18,8 +18,8 @@ import type { AdminUser } from "@/lib/users/types";
 
 const ROW_GRID = "md:grid-cols-[10rem_minmax(0,1fr)_minmax(0,1.2fr)_7rem_minmax(0,1fr)]";
 
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "medium" }).format(new Date(value));
+function formatDateTime(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "medium" }).format(new Date(value));
 }
 
 function userName(user: AdminUser) {
@@ -68,7 +68,7 @@ function UserSearchSelect({ value, onChange }: { value: string; onChange: (id: s
         className={`group flex h-10 w-full min-w-0 items-center justify-between gap-3 rounded-lg border bg-surface px-3 text-left text-sm outline-none transition hover:border-brand/50 focus:border-brand focus:ring-3 focus:ring-brand/20 pointer-coarse:h-11 pointer-coarse:text-base ${open ? "border-brand ring-3 ring-brand/20" : "border-input"}`}
       >
         <span className="min-w-0">
-          <span className={`block truncate ${selectedUser ? "font-medium" : "text-muted"}`}>{selectedUser ? userName(selectedUser) : value ? "Loading selected user..." : "All users"}</span>
+          <span className={`block truncate ${selectedUser ? "font-medium" : "text-muted"}`}>{selectedUser ? userName(selectedUser) : value ? t("auditTrail.loadingSelectedUser") : t("auditTrail.allUsers")}</span>
           {selectedUser && <span className="block truncate text-xs text-muted">{selectedUser.email}</span>}
         </span>
         <svg viewBox="0 0 24 24" className={`size-4 shrink-0 text-muted transition group-hover:text-foreground ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -85,21 +85,21 @@ function UserSearchSelect({ value, onChange }: { value: string; onChange: (id: s
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search name, email or phone"
+              placeholder={t("auditTrail.searchPlaceholder")}
               className="h-10 w-full rounded-lg border border-input bg-surface pl-9 pr-3 text-sm outline-none transition focus:border-brand focus:ring-3 focus:ring-brand/20"
             />
           </div>
           <div className="mt-2 max-h-72 overflow-y-auto overscroll-contain">
             <button type="button" role="option" aria-selected={!value} onClick={() => choose("")} className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition hover:bg-subtle">
-              <span className="font-medium">All users</span>
+              <span className="font-medium">{t("auditTrail.allUsers")}</span>
               {!value && <Icon name="check" className="size-4 text-brand" />}
             </button>
             {users.isLoading ? (
-              <p className="px-3 py-5 text-center text-sm text-muted">Searching...</p>
+              <p className="px-3 py-5 text-center text-sm text-muted">{t("auditTrail.searching")}</p>
             ) : users.isError ? (
               <p className="px-3 py-5 text-center text-sm text-danger">{users.error.message}</p>
             ) : items.length === 0 ? (
-              <p className="px-3 py-5 text-center text-sm text-muted">No users match your search.</p>
+              <p className="px-3 py-5 text-center text-sm text-muted">{t("auditTrail.noUserMatches")}</p>
             ) : (
               items.map((user) => (
                 <button
@@ -126,7 +126,7 @@ function UserSearchSelect({ value, onChange }: { value: string; onChange: (id: s
 }
 
 export function AuditTrailPage() {
-  const { href, t } = useI18n();
+  const { href, t, locale } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -184,7 +184,7 @@ export function AuditTrailPage() {
           <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         ) : items.length === 0 ? (
           <EmptyState icon="shield" title={t("auditTrail.noResults")}>
-            Try a wider date range or remove a filter.
+            {t("auditTrail.noResultsHint")}
           </EmptyState>
         ) : (
           <>
@@ -199,7 +199,7 @@ export function AuditTrailPage() {
                 {items.map((entry: AuditLogEntry) => (
                   <li key={entry.id} className={entry.success ? "" : "bg-danger-soft/40"}>
                     <Link href={href(`/audit-trail/${entry.id}`)} className={`grid items-center gap-x-4 gap-y-2 px-4 py-4 transition hover:bg-subtle/50 focus-visible:bg-subtle/50 focus-visible:outline-none sm:px-6 ${ROW_GRID}`}>
-                      <p className="text-sm text-muted">{formatDateTime(entry.created_at)}</p>
+                      <p className="text-sm text-muted">{formatDateTime(entry.created_at, locale)}</p>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{entry.email || t("auditTrail.unknownAccount")}</p>
                         {entry.user_id && <p className="truncate font-mono text-xs text-muted">{entry.user_id}</p>}

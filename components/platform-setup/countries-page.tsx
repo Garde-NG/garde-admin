@@ -64,7 +64,7 @@ export function CountriesPage() {
     <div className="space-y-5">
       <ConfigPageHeader
         icon="globe"
-        title="Countries"
+        title={t("platformSetup.countriesTitle")}
         description={t("platformSetup.description")}
         actions={<Button onClick={() => { setEditing(null); setModalOpen(true); }}>{t("platformSetup.newCountry")}</Button>}
       />
@@ -77,7 +77,7 @@ export function CountriesPage() {
             setParams({ q: searchDraft, page: 1 });
           }}
         >
-          <SearchInput value={searchDraft} onChange={setSearchDraft} placeholder="Search name, ISO code, dialing code or currency" label="Search countries" />
+          <SearchInput value={searchDraft} onChange={setSearchDraft} placeholder={t("platformSetup.searchPlaceholder")} label={t("platformSetup.searchLabel")} />
         </form>
         {query.isLoading ? (
           <SkeletonRows rows={7} columns={5} />
@@ -86,10 +86,10 @@ export function CountriesPage() {
         ) : items.length === 0 ? (
           <EmptyState
             icon="globe"
-            title={search ? "No countries match your search" : t("platformSetup.noResults")}
-            action={search ? <Button variant="secondary" onClick={() => { setSearchDraft(""); setParams({ q: null, page: 1 }); }}>Clear search</Button> : undefined}
+            title={search ? t("platformSetup.noMatch") : t("platformSetup.noResults")}
+            action={search ? <Button variant="secondary" onClick={() => { setSearchDraft(""); setParams({ q: null, page: 1 }); }}>{t("common.clearSearch")}</Button> : undefined}
           >
-            {search ? "Try a different name, code or currency." : "Countries you add will appear here."}
+            {search ? t("platformSetup.noMatchHint") : t("platformSetup.emptyHint")}
           </EmptyState>
         ) : (
           <>

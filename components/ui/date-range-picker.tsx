@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/provider";
+import type { MessagePath } from "@/lib/i18n/provider";
 
 export function lagosToday() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lagos" }).format(new Date());
@@ -17,9 +19,34 @@ function monthStart(dateText: string) {
   return `${dateText.slice(0, 8)}01`;
 }
 
-function monthLabel(month: string) {
+const MONTH_KEYS = [
+  "dateRangePicker.monthJanuary",
+  "dateRangePicker.monthFebruary",
+  "dateRangePicker.monthMarch",
+  "dateRangePicker.monthApril",
+  "dateRangePicker.monthMay",
+  "dateRangePicker.monthJune",
+  "dateRangePicker.monthJuly",
+  "dateRangePicker.monthAugust",
+  "dateRangePicker.monthSeptember",
+  "dateRangePicker.monthOctober",
+  "dateRangePicker.monthNovember",
+  "dateRangePicker.monthDecember",
+] as const satisfies readonly MessagePath[];
+
+const WEEKDAY_KEYS = [
+  "dateRangePicker.weekdaySun",
+  "dateRangePicker.weekdayMon",
+  "dateRangePicker.weekdayTue",
+  "dateRangePicker.weekdayWed",
+  "dateRangePicker.weekdayThu",
+  "dateRangePicker.weekdayFri",
+  "dateRangePicker.weekdaySat",
+] as const satisfies readonly MessagePath[];
+
+function monthLabel(month: string, t: (path: MessagePath) => string) {
   const [year, value] = month.split("-").map(Number);
-  return new Intl.DateTimeFormat("en", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(year, value - 1, 1)));
+  return `${t(MONTH_KEYS[value - 1])} ${year}`;
 }
 
 function daysInMonth(month: string) {
@@ -38,27 +65,27 @@ function shiftMonth(month: string, delta: number) {
   return date.toISOString().slice(0, 7);
 }
 
-export function dateLabel(date: string) {
+export function dateLabel(date: string, locale = "en") {
   if (!date) return "";
-  return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
 }
 
-function rangeLabel(from: string, to: string) {
-  if (!from && !to) return "All time";
-  if (from && to && from === to) return dateLabel(from);
-  if (from && to) return `${dateLabel(from)} to ${dateLabel(to)}`;
-  if (from) return `From ${dateLabel(from)}`;
-  return `Until ${dateLabel(to)}`;
+function rangeLabel(from: string, to: string, t: (path: MessagePath) => string, locale: string) {
+  if (!from && !to) return t("dateRangePicker.allTime");
+  if (from && to && from === to) return dateLabel(from, locale);
+  if (from && to) return `${dateLabel(from, locale)} ${t("dateRangePicker.to")} ${dateLabel(to, locale)}`;
+  if (from) return `${t("dateRangePicker.from")} ${dateLabel(from, locale)}`;
+  return `${t("dateRangePicker.until")} ${dateLabel(to, locale)}`;
 }
 
 type Preset = "today" | "yesterday" | "7" | "month" | "all";
 
-const PRESETS: Array<[Preset, string]> = [
-  ["today", "Today"],
-  ["yesterday", "Yesterday"],
-  ["7", "Last 7 days"],
-  ["month", "This month"],
-  ["all", "All time"],
+const PRESETS: Array<[Preset, MessagePath]> = [
+  ["today", "dateRangePicker.today"],
+  ["yesterday", "dateRangePicker.yesterday"],
+  ["7", "dateRangePicker.last7Days"],
+  ["month", "dateRangePicker.thisMonth"],
+  ["all", "dateRangePicker.allTime"],
 ];
 
 interface DateRangePickerProps {
@@ -81,6 +108,7 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ label, value, onChange, disabled = false, hint, className = "" }: DatePickerProps) {
+  const { t, locale } = useI18n();
   const popoverRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState((value || lagosToday()).slice(0, 7));
@@ -128,7 +156,7 @@ export function DatePicker({ label, value, onChange, disabled = false, hint, cla
             <path d="M8 2v4M16 2v4M4 10h16" />
             <rect x="4" y="4" width="16" height="18" rx="2" />
           </svg>
-          <span className={`truncate ${value ? "font-medium" : "text-muted"}`}>{value ? dateLabel(value) : "Select a date"}</span>
+          <span className={`truncate ${value ? "font-medium" : "text-muted"}`}>{value ? dateLabel(value, locale) : t("dateRangePicker.selectDate")}</span>
         </span>
         <svg viewBox="0 0 24 24" className={`size-4 shrink-0 text-muted transition group-hover:text-foreground ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           <path d="m6 9 6 6 6-6" />
@@ -139,13 +167,13 @@ export function DatePicker({ label, value, onChange, disabled = false, hint, cla
       {open && (
         <div role="dialog" aria-label={label} className="absolute left-0 z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-surface p-3 shadow-card">
           <div className="flex items-center justify-between gap-3">
-            <button type="button" onClick={() => setMonth(shiftMonth(month, -1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label="Previous month">
+            <button type="button" onClick={() => setMonth(shiftMonth(month, -1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label={t("dateRangePicker.previousMonth")}>
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="m15 18-6-6 6-6" />
               </svg>
             </button>
-            <p className="font-semibold">{monthLabel(month)}</p>
-            <button type="button" onClick={() => setMonth(shiftMonth(month, 1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label="Next month">
+            <p className="font-semibold">{monthLabel(month, t)}</p>
+            <button type="button" onClick={() => setMonth(shiftMonth(month, 1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label={t("dateRangePicker.nextMonth")}>
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="m9 18 6-6-6-6" />
               </svg>
@@ -153,7 +181,7 @@ export function DatePicker({ label, value, onChange, disabled = false, hint, cla
           </div>
 
           <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => <span key={day}>{day}</span>)}
+            {WEEKDAY_KEYS.map((key) => <span key={key}>{t(key)}</span>)}
           </div>
           <div className="mt-1 grid grid-cols-7 gap-1">
             {Array.from({ length: offset }).map((_, index) => <span key={`single-blank-${index}`} />)}
@@ -164,7 +192,7 @@ export function DatePicker({ label, value, onChange, disabled = false, hint, cla
                   key={day}
                   type="button"
                   aria-pressed={selected}
-                  aria-label={dateLabel(day)}
+                  aria-label={dateLabel(day, locale)}
                   onClick={() => choose(day)}
                   className={`h-9 rounded-lg text-sm font-medium transition ${
                     selected ? "bg-brand text-brand-foreground" : day === today ? "bg-subtle text-foreground" : "hover:bg-subtle"
@@ -177,7 +205,7 @@ export function DatePicker({ label, value, onChange, disabled = false, hint, cla
           </div>
           {value && (
             <div className="mt-3 flex justify-end border-t border-border pt-3">
-              <Button variant="secondary" onClick={() => choose("")}>Clear date</Button>
+              <Button variant="secondary" onClick={() => choose("")}>{t("dateRangePicker.clearDate")}</Button>
             </div>
           )}
         </div>
@@ -187,6 +215,7 @@ export function DatePicker({ label, value, onChange, disabled = false, hint, cla
 }
 
 export function DateRangePicker({ from, to, onApply, align = "start", className = "", compact = false, allowAll = true }: DateRangePickerProps) {
+  const { t, locale } = useI18n();
   const popoverRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [draftFrom, setDraftFrom] = useState(from);
@@ -292,10 +321,10 @@ export function DateRangePicker({ from, to, onApply, align = "start", className 
           </span>
         )}
         <span className="min-w-0 flex-1">
-          {!compact && <span className="block text-[0.7rem] font-semibold uppercase tracking-wide text-muted">Date range</span>}
+          {!compact && <span className="block text-[0.7rem] font-semibold uppercase tracking-wide text-muted">{t("dateRangePicker.dateRange")}</span>}
           <span className={`block truncate ${compact ? "font-medium" : "font-semibold"}`}>
-            {compact && <span className="sr-only">Date range: </span>}
-            {rangeLabel(from, to)}
+            {compact && <span className="sr-only">{t("dateRangePicker.dateRangePrefix")}</span>}
+            {rangeLabel(from, to, t, locale)}
           </span>
         </span>
         <span aria-hidden className={`flex shrink-0 items-center justify-center text-muted transition group-hover:text-foreground ${compact ? "" : "size-8 rounded-lg group-hover:bg-surface"}`}>
@@ -306,14 +335,14 @@ export function DateRangePicker({ from, to, onApply, align = "start", className 
       </button>
 
       {open && (
-        <div role="dialog" aria-label="Choose date range" className={`absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border border-border bg-surface shadow-card sm:w-[min(42rem,calc(100vw-2rem))] ${panelAlign}`}>
+        <div role="dialog" aria-label={t("dateRangePicker.chooseDateRange")} className={`absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border border-border bg-surface shadow-card sm:w-[min(42rem,calc(100vw-2rem))] ${panelAlign}`}>
           <div className="grid gap-0 sm:grid-cols-[12rem_minmax(0,1fr)]">
             <div className="border-b border-border bg-subtle/50 p-3 sm:border-b-0 sm:border-r">
-              <p className="px-1 text-xs font-semibold uppercase text-muted">Quick ranges</p>
+              <p className="px-1 text-xs font-semibold uppercase text-muted">{t("dateRangePicker.quickRanges")}</p>
               <div className="mt-2 grid grid-cols-2 gap-1 sm:grid-cols-1">
-                {presets.map(([id, label]) => (
+                {presets.map(([id, labelKey]) => (
                   <button key={id} type="button" onClick={() => setPreset(id)} className="rounded-lg px-3 py-2 text-left text-sm font-medium transition hover:bg-surface">
-                    {label}
+                    {t(labelKey)}
                   </button>
                 ))}
               </div>
@@ -321,13 +350,13 @@ export function DateRangePicker({ from, to, onApply, align = "start", className 
 
             <div className="p-3">
               <div className="flex items-center justify-between gap-3">
-                <button type="button" onClick={() => setMonth(shiftMonth(month, -1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label="Previous month">
+                <button type="button" onClick={() => setMonth(shiftMonth(month, -1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label={t("dateRangePicker.previousMonth")}>
                   <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <path d="m15 18-6-6 6-6" />
                   </svg>
                 </button>
-                <p className="font-semibold">{monthLabel(month)}</p>
-                <button type="button" onClick={() => setMonth(shiftMonth(month, 1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label="Next month">
+                <p className="font-semibold">{monthLabel(month, t)}</p>
+                <button type="button" onClick={() => setMonth(shiftMonth(month, 1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label={t("dateRangePicker.nextMonth")}>
                   <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <path d="m9 18 6-6-6-6" />
                   </svg>
@@ -335,7 +364,7 @@ export function DateRangePicker({ from, to, onApply, align = "start", className 
               </div>
 
               <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted">
-                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => <span key={day}>{day}</span>)}
+                {WEEKDAY_KEYS.map((key) => <span key={key}>{t(key)}</span>)}
               </div>
               <div className="mt-1 grid grid-cols-7 gap-1">
                 {Array.from({ length: offset }).map((_, index) => <span key={`blank-${index}`} />)}
@@ -347,7 +376,7 @@ export function DateRangePicker({ from, to, onApply, align = "start", className 
                       key={day}
                       type="button"
                       aria-pressed={selected}
-                      aria-label={dateLabel(day)}
+                      aria-label={dateLabel(day, locale)}
                       onClick={() => pick(day)}
                       className={`h-9 rounded-lg text-sm font-medium transition ${
                         selected ? "bg-brand text-brand-foreground" : ranged ? "bg-brand-soft text-brand" : day === today ? "bg-subtle text-foreground" : "hover:bg-subtle"
@@ -360,10 +389,10 @@ export function DateRangePicker({ from, to, onApply, align = "start", className 
               </div>
 
               <div className="mt-4 flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-muted">{rangeLabel(draftFrom, draftTo)}</p>
+                <p className="text-xs text-muted">{rangeLabel(draftFrom, draftTo, t, locale)}</p>
                 <div className="grid grid-cols-2 gap-2 sm:flex">
-                  <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
-                  <Button onClick={apply} disabled={!canApply}>Apply</Button>
+                  <Button variant="secondary" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+                  <Button onClick={apply} disabled={!canApply}>{t("dateRangePicker.apply")}</Button>
                 </div>
               </div>
             </div>

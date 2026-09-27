@@ -12,9 +12,9 @@ import { useAdminUser, useUserActions } from "@/lib/query/users";
 import { useUser } from "@/lib/query/user";
 import { UserStatusBadge } from "@/components/users/user-status-badge";
 
-function formatDateTime(value: string | null) {
+function formatDateTime(value: string | null, locale: string) {
   if (!value) return null;
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -32,14 +32,15 @@ function shortId(value: string) {
 }
 
 function CopyValue({ value, display = value, mono = false }: { value: string; display?: string; mono?: boolean }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   return (
     <span className="inline-flex min-w-0 items-center justify-end gap-1.5">
       <span title={value} className={`min-w-0 truncate ${mono ? "font-mono text-xs" : ""}`}>{display}</span>
       <button
         type="button"
-        title="Copy"
-        aria-label="Copy"
+        title={t("common.copy")}
+        aria-label={t("common.copy")}
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(value);
@@ -65,7 +66,7 @@ function initials(user: { first_name: string; last_name: string; email: string }
 }
 
 export function UserDetailPage({ id }: { id: string }) {
-  const { href, t } = useI18n();
+  const { href, t, locale } = useI18n();
   const toast = useToast();
   const query = useAdminUser(id);
   const { user: viewer } = useUser();
@@ -124,18 +125,18 @@ export function UserDetailPage({ id }: { id: string }) {
             <div className="min-w-0 space-y-5">
               <section className="space-y-3 rounded-2xl border border-border bg-surface p-5 shadow-card sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-                  <h2 className="text-sm font-semibold">Lifecycle</h2>
+                  <h2 className="text-sm font-semibold">{t("users.sectionLifecycle")}</h2>
                   <UserStatusBadge user={target} />
                 </div>
                 <div className="divide-y divide-border">
-                  <Row label={t("users.lastLogin")} value={formatDateTime(target.last_login_at) ?? t("common.never")} />
-                  <Row label={t("users.createdAt")} value={formatDateTime(target.created_at)} />
-                  <Row label="Last updated" value={formatDateTime(target.updated_at)} />
+                  <Row label={t("users.lastLogin")} value={formatDateTime(target.last_login_at, locale) ?? t("common.never")} />
+                  <Row label={t("users.createdAt")} value={formatDateTime(target.created_at, locale)} />
+                  <Row label={t("users.lastUpdated")} value={formatDateTime(target.updated_at, locale)} />
                   {target.is_suspended && <Row label={t("users.suspendedReasonLabel")} value={target.suspended_reason ?? "—"} />}
-                  {target.is_suspended && <Row label={t("users.suspendedSince")} value={formatDateTime(target.suspended_at)} />}
-                  {target.is_deleted && <Row label={t("users.deletedSince")} value={formatDateTime(target.deleted_at)} />}
-                  {target.is_invite_pending && <Row label={t("users.inviteSuccess")} value={formatDateTime(target.invited_at)} />}
-                  {target.invite_accepted_at && <Row label="Invite accepted" value={formatDateTime(target.invite_accepted_at)} />}
+                  {target.is_suspended && <Row label={t("users.suspendedSince")} value={formatDateTime(target.suspended_at, locale)} />}
+                  {target.is_deleted && <Row label={t("users.deletedSince")} value={formatDateTime(target.deleted_at, locale)} />}
+                  {target.is_invite_pending && <Row label={t("users.inviteSuccess")} value={formatDateTime(target.invited_at, locale)} />}
+                  {target.invite_accepted_at && <Row label={t("users.inviteAccepted")} value={formatDateTime(target.invite_accepted_at, locale)} />}
                 </div>
               </section>
 
@@ -183,7 +184,7 @@ export function UserDetailPage({ id }: { id: string }) {
               <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
                 <header className="flex items-center gap-2 border-b border-border px-4 py-3 sm:px-5">
                   <Icon name="user" className="size-4 text-muted" />
-                  <h2 className="text-sm font-semibold">Account</h2>
+                  <h2 className="text-sm font-semibold">{t("users.sectionAccount")}</h2>
                 </header>
                 <dl className="divide-y divide-border px-4 sm:px-5">
                   <Row label={t("users.accountId")} value={<CopyValue value={target.id} display={shortId(target.id)} mono />} />
@@ -196,14 +197,14 @@ export function UserDetailPage({ id }: { id: string }) {
               <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
                 <header className="flex items-center gap-2 border-b border-border px-4 py-3 sm:px-5">
                   <Icon name="lock" className="size-4 text-muted" />
-                  <h2 className="text-sm font-semibold">Security</h2>
+                  <h2 className="text-sm font-semibold">{t("common.security")}</h2>
                 </header>
                 <dl className="divide-y divide-border px-4 sm:px-5">
                   <Row label={t("users.twoFactor")} value={target.is_two_factor_enabled ? t("users.twoFactorEnabled") : t("users.twoFactorDisabled")} />
-                  <Row label="2FA method" value={target.two_factor_method ?? "—"} />
+                  <Row label={t("users.twoFactorMethod")} value={target.two_factor_method ?? "—"} />
                   <Row label={t("security.passkeys")} value={target.is_passwordless_enabled ? t("users.passkeysEnabled") : t("common.no")} />
                 </dl>
-                <p className="border-t border-border px-4 py-3 text-xs text-muted sm:px-5">Security fields reflect the latest account response from the API.</p>
+                <p className="border-t border-border px-4 py-3 text-xs text-muted sm:px-5">{t("users.securityFieldsHint")}</p>
               </section>
             </aside>
           </div>

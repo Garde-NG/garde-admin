@@ -15,9 +15,9 @@ import type { AdminUser } from "@/lib/users/types";
 
 const ROW_GRID = "md:grid-cols-[minmax(0,1.45fr)_8rem_minmax(0,1fr)_7rem_7.5rem]";
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, locale: string) {
   if (!value) return null;
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(value));
 }
 
 function nameOf(user: AdminUser) {
@@ -30,7 +30,7 @@ function initials(user: AdminUser) {
 }
 
 export function UsersPage({ userType: fixedUserType }: { userType?: "customer" | "admin" }) {
-  const { href, t } = useI18n();
+  const { href, t, locale } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -63,7 +63,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
         icon={fixedUserType === "admin" ? "idCard" : "users"}
         showBackLink={false}
         title={fixedUserType === "admin" ? t("nav.staff") : fixedUserType === "customer" ? t("nav.customers") : t("users.title")}
-        description={fixedUserType === "admin" ? "Admins and staff who run the dashboard. Invite colleagues, review security and manage access." : fixedUserType === "customer" ? "Customers on the platform. Search, inspect account status and review security posture." : t("users.description")}
+        description={fixedUserType === "admin" ? t("users.staffDescription") : fixedUserType === "customer" ? t("users.customerDescription") : t("users.description")}
         actions={fixedUserType !== "customer" ? <Button onClick={() => setInviteOpen(true)}><Icon name="userPlus" className="size-4" />{t("users.inviteAdmin")}</Button> : undefined}
       />
 
@@ -112,15 +112,15 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
           <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         ) : items.length === 0 ? (
           <EmptyState icon={fixedUserType === "admin" ? "idCard" : "users"} title={t("users.noResults")}>
-            Try another search or remove a filter.
+            {t("common.tryAnotherSearch")}
           </EmptyState>
         ) : (
           <>
             <div className={`hidden gap-4 bg-subtle/70 px-6 py-3 text-xs font-semibold uppercase text-muted md:grid ${ROW_GRID}`}>
-              <span>Person</span>
+              <span>{t("users.columnPerson")}</span>
               <span>{t("users.userType")}</span>
-              <span>Contact</span>
-              <span>Security</span>
+              <span>{t("users.columnContact")}</span>
+              <span>{t("users.columnSecurity")}</span>
               <span>{t("common.status")}</span>
             </div>
             <ul className="divide-y divide-border">
@@ -131,7 +131,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
                         <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand">{initials(user)}</span>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">{nameOf(user)}</p>
-                          <p className="truncate text-xs text-muted">{formatDate(user.last_login_at) ? `${t("users.lastLogin")}: ${formatDate(user.last_login_at)}` : t("common.never")}</p>
+                          <p className="truncate text-xs text-muted">{formatDate(user.last_login_at, locale) ? `${t("users.lastLogin")}: ${formatDate(user.last_login_at, locale)}` : t("common.never")}</p>
                         </div>
                       </div>
                       <div><span className="capitalize text-sm text-muted md:text-foreground">{user.user_type === "admin" ? t("users.admin") : t("users.customer")}</span></div>
@@ -139,7 +139,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
                         <p className="truncate">{user.email}</p>
                         <p className="truncate text-xs text-muted">{user.phone_number}</p>
                       </div>
-                      <div><span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${user.is_two_factor_enabled ? "bg-success-soft text-success" : "bg-subtle text-muted"}`}>{user.is_two_factor_enabled ? "2FA on" : "2FA off"}</span></div>
+                      <div><span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${user.is_two_factor_enabled ? "bg-success-soft text-success" : "bg-subtle text-muted"}`}>{user.is_two_factor_enabled ? t("users.twoFaOn") : t("users.twoFaOff")}</span></div>
                       <div><UserStatusBadge user={user} /></div>
                     </Link>
                   </li>

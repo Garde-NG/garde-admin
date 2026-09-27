@@ -12,6 +12,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { useI18n } from "@/lib/i18n/provider";
 
 export interface SelectChangeEvent {
   target: { value: string; name?: string };
@@ -89,6 +90,7 @@ export function Select({
   placeholder = "",
   className = "",
 }: SelectProps) {
+  const { t } = useI18n();
   const id = useId();
   const listId = `${id}-list`;
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
@@ -267,7 +269,7 @@ export function Select({
           style={{ position: "fixed", right: "auto", margin: 0, top: placement.top ?? "auto", bottom: placement.bottom ?? "auto", left: placement.left, width: placement.width, maxHeight: placement.maxHeight }}
           className="z-50 overflow-y-auto overscroll-contain rounded-xl border border-border bg-surface p-1 text-sm text-foreground shadow-card"
         >
-          {options.length === 0 && <p className="px-3 py-2 text-muted">No options</p>}
+          {options.length === 0 && <p className="px-3 py-2 text-muted">{t("common.noOptions")}</p>}
           {options.map((option, index) => {
             const isSelected = index === selectedIndex;
             return (

@@ -11,8 +11,8 @@ import { useI18n } from "@/lib/i18n/provider";
 import { useNotificationActions, useNotifications } from "@/lib/query/notifications";
 import type { NotificationItem } from "@/lib/notifications/types";
 
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+function formatDateTime(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 function relativeTime(value: string, fallback: string) {
@@ -26,7 +26,7 @@ function relativeTime(value: string, fallback: string) {
 }
 
 export function NotificationsPage() {
-  const { href, t } = useI18n();
+  const { href, t, locale } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -82,9 +82,9 @@ export function NotificationsPage() {
             setParams({ q: searchDraft, page: 1 });
           }}
         >
-          <SearchInput value={searchDraft} onChange={setSearchDraft} placeholder="Search notifications" label="Search notifications" />
-          <Select label="Status" hideLabel value={read} onChange={(event) => setParams({ read: event.target.value || null, page: 1 })}>
-            <option value="">All notifications</option>
+          <SearchInput value={searchDraft} onChange={setSearchDraft} placeholder={t("notifications.searchPlaceholder")} label={t("notifications.searchPlaceholder")} />
+          <Select label={t("common.status")} hideLabel value={read} onChange={(event) => setParams({ read: event.target.value || null, page: 1 })}>
+            <option value="">{t("notifications.allNotifications")}</option>
             <option value="unread">{t("notifications.unread")}</option>
             <option value="read">{t("notifications.read")}</option>
           </Select>
@@ -92,7 +92,7 @@ export function NotificationsPage() {
           <Button type="submit" variant="secondary">{t("common.search")}</Button>
           <Button variant="secondary" onClick={resetToday}>{t("notifications.resetToday")}</Button>
         </form>
-        <p className="text-xs text-muted">New notifications appear here as they arrive.</p>
+        <p className="text-xs text-muted">{t("notifications.emptyHint")}</p>
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
@@ -101,8 +101,8 @@ export function NotificationsPage() {
         ) : query.isError ? (
           <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         ) : items.length === 0 ? (
-          <EmptyState icon="bell" title={q || read ? "No notifications match" : t("notifications.noResults")}>
-            {q || read ? "Try another search or remove a filter." : t("notifications.filterHelp")}
+          <EmptyState icon="bell" title={q || read ? t("notifications.noMatch") : t("notifications.noResults")}>
+            {q || read ? t("common.tryAnotherSearch") : t("notifications.filterHelp")}
           </EmptyState>
         ) : (
           <ul className="divide-y divide-border">
@@ -129,7 +129,7 @@ export function NotificationsPage() {
           <span className="min-w-0 flex-1">
             <span className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <span className={`text-sm ${item.is_read ? "font-medium" : "font-semibold"}`}>{item.title}</span>
-              <time dateTime={item.created_at} title={formatDateTime(item.created_at)} className="shrink-0 text-xs text-muted">
+              <time dateTime={item.created_at} title={formatDateTime(item.created_at, locale)} className="shrink-0 text-xs text-muted">
                 {relativeTime(item.created_at, t("notifications.justNow"))}
               </time>
             </span>

@@ -4,11 +4,13 @@ import { useSyncExternalStore } from "react";
 
 import type { ThemePreference } from "@/lib/theme";
 import { readPreference, savePreference, subscribeToPreference } from "@/lib/theme-client";
+import { useI18n } from "@/lib/i18n/provider";
+import type { MessagePath } from "@/lib/i18n/provider";
 
-const OPTIONS: { value: ThemePreference; label: string; icon: React.ReactNode }[] = [
+const OPTIONS: { value: ThemePreference; labelKey: MessagePath; icon: React.ReactNode }[] = [
   {
     value: "light",
-    label: "Light",
+    labelKey: "theme.light",
     icon: (
       <>
         <circle cx="12" cy="12" r="4" />
@@ -18,7 +20,7 @@ const OPTIONS: { value: ThemePreference; label: string; icon: React.ReactNode }[
   },
   {
     value: "system",
-    label: "System",
+    labelKey: "theme.system",
     icon: (
       <>
         <rect x="3" y="4" width="18" height="12" rx="2" />
@@ -28,13 +30,14 @@ const OPTIONS: { value: ThemePreference; label: string; icon: React.ReactNode }[
   },
   {
     value: "dark",
-    label: "Dark",
+    labelKey: "theme.dark",
     icon: <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />,
   },
 ];
 
 /** Segmented Light / System / Dark control. */
 export function ThemeToggle({ className = "" }: { className?: string }) {
+  const { t } = useI18n();
   // The server can't know the saved preference; "system" is replaced right
   // after hydration (the page itself is already themed by the inline script).
   const preference = useSyncExternalStore(subscribeToPreference, readPreference, () => "system");
@@ -42,19 +45,20 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   return (
     <div
       role="radiogroup"
-      aria-label="Theme"
+      aria-label={t("theme.theme")}
       className={`inline-flex items-center gap-0.5 rounded-full border border-border bg-subtle p-0.5 ${className}`}
     >
       {OPTIONS.map((option) => {
         const selected = preference === option.value;
+        const label = t(option.labelKey);
         return (
           <button
             key={option.value}
             type="button"
             role="radio"
             aria-checked={selected}
-            aria-label={option.label}
-            title={option.label}
+            aria-label={label}
+            title={label}
             onClick={() => savePreference(option.value)}
             className={`flex size-7 items-center justify-center rounded-full transition pointer-coarse:size-9 ${
               selected

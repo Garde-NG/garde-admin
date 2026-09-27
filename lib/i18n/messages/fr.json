@@ -35,7 +35,58 @@
     "yes": "Oui",
     "no": "Non",
     "optional": "Facultatif",
-    "id": "ID"
+    "id": "ID",
+    "loading": "Chargement",
+    "couldntLoad": "Impossible de charger ceci",
+    "noOptions": "Aucune option",
+    "copy": "Copier",
+    "open": "Ouvrir",
+    "clearSearch": "Effacer la recherche",
+    "tryAnotherSearch": "Essayez une autre recherche ou supprimez un filtre."
+  },
+  "theme": {
+    "theme": "Theme",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Systeme"
+  },
+  "dateRangePicker": {
+    "selectDate": "Selectionner une date",
+    "clearDate": "Effacer la date",
+    "dateRange": "Plage de dates",
+    "dateRangePrefix": "Plage de dates : ",
+    "chooseDateRange": "Choisir une plage de dates",
+    "quickRanges": "Plages rapides",
+    "previousMonth": "Mois precedent",
+    "nextMonth": "Mois suivant",
+    "allTime": "Toute la periode",
+    "to": "a",
+    "from": "Depuis",
+    "until": "Jusqu'au",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "last7Days": "7 derniers jours",
+    "thisMonth": "Ce mois-ci",
+    "apply": "Appliquer",
+    "weekdaySun": "Di",
+    "weekdayMon": "Lu",
+    "weekdayTue": "Ma",
+    "weekdayWed": "Me",
+    "weekdayThu": "Je",
+    "weekdayFri": "Ve",
+    "weekdaySat": "Sa",
+    "monthJanuary": "Janvier",
+    "monthFebruary": "Fevrier",
+    "monthMarch": "Mars",
+    "monthApril": "Avril",
+    "monthMay": "Mai",
+    "monthJune": "Juin",
+    "monthJuly": "Juillet",
+    "monthAugust": "Aout",
+    "monthSeptember": "Septembre",
+    "monthOctober": "Octobre",
+    "monthNovember": "Novembre",
+    "monthDecember": "Decembre"
   },
   "api": {
     "accountServiceUnavailable": "Le service de compte est temporairement indisponible.",
@@ -223,7 +274,11 @@
     "resetToday": "Aujourd'hui",
     "previous": "Precedent",
     "next": "Suivant",
-    "page": "Page"
+    "page": "Page",
+    "searchPlaceholder": "Rechercher des notifications",
+    "allNotifications": "Toutes les notifications",
+    "emptyHint": "Les nouvelles notifications apparaissent ici a leur arrivee.",
+    "noMatch": "Aucune notification ne correspond"
   },
   "legalDocuments": {
     "title": "Documents legaux",
@@ -272,7 +327,9 @@
     "versionRequired": "Saisissez une version, ex. 1.1",
     "effectiveDateHint": "Date cible informative — la publication (ci-dessous) rend la version active.",
     "translationRequired": "Fournissez un titre et un contenu pour chaque langue.",
-    "noPublishedVersion": "Aucune version publiee"
+    "noPublishedVersion": "Aucune version publiee",
+    "resetFilters": "Reinitialiser les filtres",
+    "emptyHint": "Creez un brouillon ou ajustez vos filtres."
   },
   "auditTrail": {
     "title": "Journal d'audit",
@@ -314,7 +371,13 @@
     "eventAccountCloseFailed": "Echec de fermeture du compte",
     "eventAccountRestored": "Compte restaure",
     "eventAccountRestoreFailed": "Echec de restauration du compte",
-    "eventWebauthnRegistered": "Cle d'acces enregistree"
+    "eventWebauthnRegistered": "Cle d'acces enregistree",
+    "loadingSelectedUser": "Chargement de l'utilisateur selectionne...",
+    "allUsers": "Tous les utilisateurs",
+    "searchPlaceholder": "Rechercher par nom, e-mail ou telephone",
+    "searching": "Recherche...",
+    "noUserMatches": "Aucun utilisateur ne correspond a votre recherche.",
+    "noResultsHint": "Essayez une plage de dates plus large ou supprimez un filtre."
   },
   "users": {
     "title": "Utilisateurs",
@@ -373,7 +436,21 @@
     "restore": "Restaurer le compte",
     "restoreSuccess": "Compte restaure.",
     "deletedSince": "Supprime depuis",
-    "cannotActOnSelf": "Vous ne pouvez pas effectuer cette action sur votre propre compte."
+    "cannotActOnSelf": "Vous ne pouvez pas effectuer cette action sur votre propre compte.",
+    "staffDescription": "Administrateurs et personnel qui gerent le tableau de bord. Invitez des collegues, verifiez la securite et gerez les acces.",
+    "customerDescription": "Clients de la plateforme. Recherchez, verifiez le statut des comptes et examinez la securite.",
+    "noResultsHint": "Essayez une autre recherche ou supprimez un filtre.",
+    "columnPerson": "Personne",
+    "columnContact": "Contact",
+    "columnSecurity": "Securite",
+    "twoFaOn": "2FA active",
+    "twoFaOff": "2FA desactive",
+    "sectionLifecycle": "Cycle de vie",
+    "sectionAccount": "Compte",
+    "lastUpdated": "Derniere mise a jour",
+    "inviteAccepted": "Invitation acceptee",
+    "twoFactorMethod": "Methode 2FA",
+    "securityFieldsHint": "Les champs de securite refletent la derniere reponse du compte depuis l'API."
   },
   "platformSetup": {
     "title": "Configuration de la plateforme",
@@ -400,7 +477,16 @@
     "markInactiveInstead": "Marquer inactif a la place",
     "noResults": "Aucun pays pour le moment.",
     "loadError": "Impossible de charger les pays.",
-    "currencyTranslations": "Traductions du nom de la devise"
+    "currencyTranslations": "Traductions du nom de la devise",
+    "hubTitle": "Configuration",
+    "hubDescription": "Tout ce qui determine le fonctionnement de la plateforme. Les pays sont les premiers ici ; d'autres zones de configuration rejoindront cette page sous forme de cartes.",
+    "countriesTitle": "Pays",
+    "countriesCardDescription": "Gerez la liste de reference des pays utilisee par les selecteurs de devise, de telephone et de langue sur Garde.",
+    "searchPlaceholder": "Rechercher par nom, code ISO, indicatif ou devise",
+    "searchLabel": "Rechercher des pays",
+    "noMatch": "Aucun pays ne correspond a votre recherche",
+    "noMatchHint": "Essayez un autre nom, code ou devise.",
+    "emptyHint": "Les pays que vous ajoutez apparaitront ici."
   },
   "notFound": {
     "title": "Page introuvable",
