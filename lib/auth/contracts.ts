@@ -8,6 +8,7 @@ const method = z.enum(["email_otp", "totp"]);
 const credential = z.record(z.string(), z.unknown());
 export const contracts = {
   login: z.object({ email, password }),
+  "accept-invite": z.object({ token: z.string().min(1), password: newPassword }),
   "2fa/setup": z.object({ method }),
   "2fa/verify-setup": z.object({ code }),
   "2fa/verify-login": z.object({ code }),

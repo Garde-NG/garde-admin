@@ -65,6 +65,9 @@
   },
   "auth": {
     "accountInviteOnly": "Les comptes administrateur sont sur invitation. Contactez votre administrateur pour obtenir l'acces.",
+    "acceptInvite": "Accepter l'invitation",
+    "acceptInviteDescription": "Creez votre mot de passe pour accepter cette invitation administrateur. Vous configurerez ensuite l'authentification a deux facteurs.",
+    "acceptInviteTitle": "Accepter votre invitation",
     "authHeroTitle": "Votre espace de travail, tout au meme endroit.",
     "authHeroDescription": "Bienvenue sur Garde. Une facon plus simple de gerer votre journee.",
     "changePassword": "Changer le mot de passe",
@@ -78,6 +81,7 @@
     "forgotPasswordDescription": "Saisissez l'e-mail de votre compte pour demander une reinitialisation.",
     "forgotPasswordLink": "Mot de passe oublie ?",
     "hidePassword": "Masquer",
+    "inviteInvalid": "Ce lien d'invitation est manquant ou invalide. Demandez a votre administrateur de le renvoyer.",
     "newPassword": "Nouveau mot de passe",
     "passwordChanged": "Mot de passe modifie avec succes.",
     "passwordMismatch": "Les mots de passe ne correspondent pas.",

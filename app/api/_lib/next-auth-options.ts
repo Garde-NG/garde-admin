@@ -5,7 +5,7 @@ import { contracts } from "@/lib/auth/contracts";
 import { readAuthToken } from "@/lib/auth/next-auth-cookie";
 import { authSecret, SESSION_COOKIE, SESSION_MAX_AGE, sessionCookieOptions, type GardeToken } from "@/lib/auth/next-auth-shared";
 import type { LoginChallenge, Tokens, User } from "@/lib/auth/types";
-import { ApiError, upstream } from "./upstream";
+import { ApiError, upstream, upstreamRequest } from "./upstream";
 import { refreshToken, shouldRefresh, tokenFromLogin } from "./token";
 import { dictionaryFor, normalizeLocale } from "@/lib/i18n/config";
 
@@ -27,6 +27,14 @@ export const authOptions: NextAuthOptions = {
           return { id: randomUUID(), authToken: {
             authStep: "two_factor",
             pending: { token: result.pending_token, expiresAt: Date.now() + 300000, setup: result.two_factor_setup_required, method: result.two_factor_method },
+          } };
+        }
+        if (credentials?.mode === "accept-invite") {
+          const body = contracts["accept-invite"].parse(credentials);
+          const result = await upstreamRequest<{ pending_token: string; two_factor_setup_required: boolean }>("users", "accept-invite", { body, locale });
+          return { id: randomUUID(), authToken: {
+            authStep: "two_factor",
+            pending: { token: result.pending_token, expiresAt: Date.now() + 300000, setup: result.two_factor_setup_required, method: null },
           } };
         }
         if (credentials?.mode === "verify") {

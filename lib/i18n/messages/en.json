@@ -65,6 +65,9 @@
   },
   "auth": {
     "accountInviteOnly": "Admin accounts are invite-only. Contact your administrator for access.",
+    "acceptInvite": "Accept invite",
+    "acceptInviteDescription": "Create your password to accept this admin invitation. You will set up two-factor authentication next.",
+    "acceptInviteTitle": "Accept your invite",
     "authHeroTitle": "Your workspace, all in one place.",
     "authHeroDescription": "Welcome to Garde. A simpler way to manage your day.",
     "changePassword": "Change password",
@@ -78,6 +81,7 @@
     "forgotPasswordDescription": "Enter your account email to request a password reset.",
     "forgotPasswordLink": "Forgot password?",
     "hidePassword": "Hide",
+    "inviteInvalid": "This invite link is missing or invalid. Ask your administrator to resend it.",
     "newPassword": "New password",
     "passwordChanged": "Password changed successfully.",
     "passwordMismatch": "Passwords do not match.",
