@@ -6,6 +6,12 @@ import { dictionaryFor } from "@/lib/i18n/config";
 import type { NotificationItem, NotificationList } from "@/lib/notifications/types";
 
 export const notificationsKey = ["notifications"] as const;
+export interface NotificationListParams {
+  page?: number;
+  pageSize?: number;
+  startDate?: string;
+  endDate?: string;
+}
 
 async function notificationRequest<T>(path = "", init?: RequestInit): Promise<T> {
   const locale = currentLocale();
@@ -24,10 +30,23 @@ async function notificationRequest<T>(path = "", init?: RequestInit): Promise<T>
   return result.data as T;
 }
 
-export function useNotifications() {
+function listPath(params: NotificationListParams = {}) {
+  const search = new URLSearchParams();
+  search.set("page", String(params.page ?? 1));
+  search.set("page_size", String(params.pageSize ?? 20));
+  if (params.startDate) search.set("start_date", params.startDate);
+  if (params.endDate) search.set("end_date", params.endDate);
+  return `?${search}`;
+}
+
+export function notificationsListKey(params: NotificationListParams = {}) {
+  return [...notificationsKey, params] as const;
+}
+
+export function useNotifications(params: NotificationListParams = {}) {
   return useQuery({
-    queryKey: notificationsKey,
-    queryFn: () => notificationRequest<NotificationList>("?page_size=20&start_date=2020-01-01"),
+    queryKey: notificationsListKey(params),
+    queryFn: () => notificationRequest<NotificationList>(listPath(params)),
     staleTime: 30000,
   });
 }
@@ -35,7 +54,7 @@ export function useNotifications() {
 export function useNotificationActions() {
   const client = useQueryClient();
   const patchItem = (item: NotificationItem) => {
-    client.setQueryData<NotificationList>(notificationsKey, (current) => current ? {
+    client.setQueriesData<NotificationList>({ queryKey: notificationsKey }, (current) => current ? {
       ...current,
       items: current.items.map((entry) => entry.id === item.id ? item : entry),
     } : current);
@@ -47,13 +66,21 @@ export function useNotificationActions() {
   const markAllRead = useMutation({
     mutationFn: () => notificationRequest<void>("/read-all", { method: "POST" }),
     onSuccess: () => {
-      client.setQueryData<NotificationList>(notificationsKey, (current) => current ? {
+      client.setQueriesData<NotificationList>({ queryKey: notificationsKey }, (current) => current ? {
         ...current,
         items: current.items.map((item) => ({ ...item, is_read: true })),
       } : current);
     },
   });
   return { markRead, markAllRead };
+}
+
+export function useNotification(id: string) {
+  return useQuery({
+    queryKey: [...notificationsKey, "detail", id],
+    queryFn: () => notificationRequest<NotificationItem>(`/${id}`),
+    staleTime: 30000,
+  });
 }
 
 export async function getNotificationWebSocketUrl(): Promise<string> {

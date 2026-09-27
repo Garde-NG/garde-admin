@@ -40,6 +40,12 @@ const ICONS: Record<NavIcon, ReactNode> = {
       <rect x="3" y="16" width="7" height="5" rx="1.5" />
     </>
   ),
+  notifications: (
+    <>
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+      <path d="M10 21h4" />
+    </>
+  ),
   profile: (
     <>
       <circle cx="12" cy="8" r="4" />

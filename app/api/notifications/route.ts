@@ -9,13 +9,18 @@ const noStore = { "Cache-Control": "no-store" };
 
 export const runtime = "nodejs";
 
+function today() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lagos" }).format(new Date());
+}
+
 export async function GET(request: NextRequest) {
   const locale = localeFromRequest(request);
   const dict = dictionaryFor(locale);
   try {
     const { token } = await requireApiAccount(locale);
     const search = new URL(request.url).searchParams;
-    if (!search.has("start_date")) search.set("start_date", "2020-01-01");
+    if (!search.has("start_date")) search.set("start_date", today());
+    if (!search.has("end_date")) search.set("end_date", search.get("start_date") ?? today());
     const data = await upstreamRequest<NotificationList>("notifications", "", {
       accessToken: token.tokens!.access_token,
       locale,

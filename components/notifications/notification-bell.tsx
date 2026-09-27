@@ -3,21 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { getNotificationWebSocketUrl, notificationsKey, useNotificationActions, useNotifications } from "@/lib/query/notifications";
+import { getNotificationWebSocketUrl, notificationsKey, notificationsListKey, useNotificationActions, useNotifications } from "@/lib/query/notifications";
 import type { NotificationItem, NotificationList } from "@/lib/notifications/types";
 import { useI18n } from "@/lib/i18n/provider";
 import { useToast } from "@/components/ui/toast";
-
-const routeByType: Record<string, string> = {
-  login: "/settings/security",
-  login_locked: "/settings/security",
-  password_reset: "/settings/security",
-  password_changed: "/settings/security",
-  two_factor_changed: "/settings/security",
-  account_closed: "/settings/profile",
-  account_restored: "/settings/profile",
-  webauthn_registered: "/settings/security",
-};
 
 function BellIcon() {
   return (
@@ -46,6 +35,7 @@ export function NotificationBell() {
   const toast = useToast();
   const client = useQueryClient();
   const query = useNotifications();
+  const listKey = useMemo(() => notificationsListKey({}), []);
   const { markRead, markAllRead } = useNotificationActions();
   const [open, setOpen] = useState(false);
   const [liveStatus, setLiveStatus] = useState<"connected" | "reconnecting" | "error">("reconnecting");
@@ -71,7 +61,7 @@ export function NotificationBell() {
         };
         socket.onmessage = (event) => {
           const notification = JSON.parse(event.data) as NotificationItem;
-          client.setQueryData<NotificationList>(notificationsKey, (current) => {
+          client.setQueryData<NotificationList>(listKey, (current) => {
             if (!current) return { items: [notification], meta: { page: 1, page_size: 20, total_items: 1, total_pages: 1 } };
             if (current.items.some((item) => item.id === notification.id)) return current;
             return { ...current, items: [notification, ...current.items].slice(0, current.meta.page_size), meta: { ...current.meta, total_items: current.meta.total_items + 1 } };
@@ -103,12 +93,12 @@ export function NotificationBell() {
       if (timeout) clearTimeout(timeout);
       socket?.close();
     };
-  }, [client, toast]);
+  }, [client, listKey, toast]);
 
   const openNotification = (item: NotificationItem) => {
     if (!item.is_read) markRead.mutate(item.id);
     setOpen(false);
-    router.push(href(routeByType[item.type] ?? "/dashboard"));
+    router.push(href(`/notifications/${item.id}`));
   };
 
   return (
@@ -165,6 +155,18 @@ export function NotificationBell() {
                 </button>
               ))
             )}
+          </div>
+          <div className="border-t border-border p-2">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                router.push(href("/notifications"));
+              }}
+              className="flex h-10 w-full items-center justify-center rounded-lg text-sm font-medium text-brand transition hover:bg-brand-soft"
+            >
+              {t("notifications.viewAll")}
+            </button>
           </div>
         </div>
       )}

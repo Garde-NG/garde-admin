@@ -177,7 +177,20 @@
     "reconnecting": "Reconnexion aux mises a jour...",
     "liveError": "Les mises a jour en direct sont temporairement indisponibles.",
     "loadError": "Impossible de charger les notifications.",
-    "justNow": "A l'instant"
+    "justNow": "A l'instant",
+    "viewAll": "Voir toutes les notifications",
+    "detailTitle": "Notification",
+    "detailDescription": "Consultez le message complet et l'action associee.",
+    "backToNotifications": "Retour aux notifications",
+    "openRelated": "Ouvrir la page associee",
+    "read": "Lu",
+    "new": "Nouveau",
+    "filterHelp": "Filtrez les notifications par plage de dates.",
+    "noResults": "Aucune notification trouvee pour cette plage de dates.",
+    "resetToday": "Aujourd'hui",
+    "previous": "Precedent",
+    "next": "Suivant",
+    "page": "Page"
   },
   "notFound": {
     "title": "Page introuvable",

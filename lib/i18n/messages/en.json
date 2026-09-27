@@ -177,7 +177,20 @@
     "reconnecting": "Reconnecting live updates...",
     "liveError": "Live updates are temporarily unavailable.",
     "loadError": "Unable to load notifications.",
-    "justNow": "Just now"
+    "justNow": "Just now",
+    "viewAll": "View all notifications",
+    "detailTitle": "Notification",
+    "detailDescription": "Review the full message and related action.",
+    "backToNotifications": "Back to notifications",
+    "openRelated": "Open related page",
+    "read": "Read",
+    "new": "New",
+    "filterHelp": "Filter notifications by date range.",
+    "noResults": "No notifications found for this date range.",
+    "resetToday": "Today",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
   },
   "notFound": {
     "title": "Page not found",
