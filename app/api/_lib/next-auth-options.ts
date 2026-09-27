@@ -7,6 +7,7 @@ import { authSecret, SESSION_COOKIE, SESSION_MAX_AGE, sessionCookieOptions, type
 import type { LoginChallenge, Tokens, User } from "@/lib/auth/types";
 import { ApiError, upstream } from "./upstream";
 import { refreshToken, shouldRefresh, tokenFromLogin } from "./token";
+import { dictionaryFor, normalizeLocale } from "@/lib/i18n/config";
 
 export const authOptions: NextAuthOptions = {
   secret: authSecret(),
@@ -15,12 +16,14 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: "/login" },
   providers: [CredentialsProvider({
     name: "Garde API",
-    credentials: { mode: {}, email: {}, password: {}, code: {}, credential: {} },
+    credentials: { mode: {}, email: {}, password: {}, code: {}, credential: {}, locale: {} },
     async authorize(credentials) {
+      const locale = normalizeLocale(credentials?.locale);
+      const dict = dictionaryFor(locale);
       try {
         if (credentials?.mode === "password") {
           const body = contracts.login.parse(credentials);
-          const result = await upstream<LoginChallenge>("login", body);
+          const result = await upstream<LoginChallenge>("login", body, undefined, locale);
           return { id: randomUUID(), authToken: {
             authStep: "two_factor",
             pending: { token: result.pending_token, expiresAt: Date.now() + 300000, setup: result.two_factor_setup_required, method: result.two_factor_method },
@@ -29,23 +32,23 @@ export const authOptions: NextAuthOptions = {
         if (credentials?.mode === "verify") {
           const token = await readAuthToken();
           const pending = token?.pending;
-          if (!pending || pending.expiresAt <= Date.now()) throw new ApiError(401, "Verification expired. Please sign in again.");
+          if (!pending || pending.expiresAt <= Date.now()) throw new ApiError(401, dict.api.verificationExpired);
           const { code } = contracts["2fa/verify-login"].parse(credentials);
-          if (pending.setup && !pending.method) throw new ApiError(400, "Choose a verification method first.");
+          if (pending.setup && !pending.method) throw new ApiError(400, dict.api.chooseVerificationMethod);
           const result = await upstream<Tokens & { user: User }>(pending.setup ? "2fa/verify-setup" : "2fa/verify-login", {
             pending_token: pending.token, code, ...(pending.setup && { method: pending.method }),
-          });
-          return { id: result.user.id, authToken: await tokenFromLogin(result) };
+          }, undefined, locale);
+          return { id: result.user.id, authToken: await tokenFromLogin(result, locale) };
         }
         if (credentials?.mode === "passkey") {
           const body = contracts["webauthn/login/verify"].parse({ email: credentials.email, credential: JSON.parse(credentials.credential || "{}") });
-          const result = await upstream<Tokens & { user: User }>("webauthn/login/verify", body);
-          return { id: result.user.id, authToken: await tokenFromLogin(result) };
+          const result = await upstream<Tokens & { user: User }>("webauthn/login/verify", body, undefined, locale);
+          return { id: result.user.id, authToken: await tokenFromLogin(result, locale) };
         }
-        throw new ApiError(400, "Unsupported sign-in method.");
+        throw new ApiError(400, dict.api.unsupportedSignIn);
       } catch (error) {
         // Credentials errors are intentionally safe, readable API messages.
-        throw new Error(error instanceof ApiError ? error.message : "Check your sign-in details and try again.");
+        throw new Error(error instanceof ApiError ? error.message : dict.api.signInDetails);
       }
     },
   })],

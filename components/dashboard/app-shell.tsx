@@ -9,8 +9,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Logo, LogoMark } from "@/components/brand/logo";
 
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { type NavIcon, type NavSection } from "@/lib/navigation";
+import { useI18n } from "@/lib/i18n/provider";
 
 
 interface AppShellProps {
@@ -76,6 +78,7 @@ interface Tip {
 
 function Navigation({ sections, onNavigate, collapsed = false }: { sections: NavSection[]; onNavigate?: () => void; collapsed?: boolean }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [tip, setTip] = useState<Tip | null>(null);
 
   // A native `title` would be clipped by this scrolling list, so the rail draws its own tooltip.
@@ -88,7 +91,7 @@ function Navigation({ sections, onNavigate, collapsed = false }: { sections: Nav
 
   return (
     <nav
-      aria-label="Main"
+      aria-label={t("nav.main")}
       onScroll={hideTip}
       className={`flex-1 overflow-y-auto overscroll-contain py-4 ${collapsed ? "space-y-3 px-2" : "space-y-6 px-3"}`}
     >
@@ -102,25 +105,26 @@ function Navigation({ sections, onNavigate, collapsed = false }: { sections: Nav
         </span>
       )}
       {sections.map((section, index) => (
-        <div key={section.title ?? index}>
-          {section.title && !collapsed && (
+        <div key={section.titleKey ?? index}>
+          {section.titleKey && !collapsed && (
             <p className="mb-1.5 px-3 text-xs font-medium uppercase tracking-wider text-muted">
-              {section.title}
+              {t(section.titleKey)}
             </p>
           )}
           {collapsed && index > 0 && <div aria-hidden className="mx-2 mb-3 border-t border-border" />}
           <ul className="space-y-0.5">
             {section.items.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const label = t(item.labelKey);
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
-                    onPointerEnter={(event) => showTip(item.label, event.currentTarget)}
+                    onPointerEnter={(event) => showTip(label, event.currentTarget)}
                     onPointerLeave={hideTip}
-                    onFocus={(event) => showTip(item.label, event.currentTarget)}
+                    onFocus={(event) => showTip(label, event.currentTarget)}
                     onBlur={hideTip}
                     className={`flex items-center rounded-lg text-sm font-medium transition pointer-coarse:text-base ${
                       collapsed ? "mx-auto size-11 justify-center" : "gap-3 px-3 py-2 pointer-coarse:py-3"
@@ -131,7 +135,7 @@ function Navigation({ sections, onNavigate, collapsed = false }: { sections: Nav
                     }`}
                   >
                     <Icon name={item.icon} />
-                    {collapsed ? <span className="sr-only">{item.label}</span> : item.label}
+                    {collapsed ? <span className="sr-only">{label}</span> : label}
                   </Link>
                 </li>
               );
@@ -152,6 +156,7 @@ function Drawer({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -177,7 +182,7 @@ function Drawer({
       onClick={(event) => {
         if (event.target === ref.current) onClose();
       }}
-      aria-label="Navigation menu"
+      aria-label={t("shell.navigationMenu")}
       className="m-0 mr-auto h-dvh max-h-none w-[min(18rem,85vw)] max-w-none overflow-hidden border-r border-border bg-surface p-0 text-foreground shadow-card backdrop:bg-black/60 open:flex open:animate-slide-in-left open:flex-col lg:hidden"
     >
       {children}
@@ -186,8 +191,9 @@ function Drawer({
 }
 
 function UserMenu() {
+  const { t } = useI18n();
   const { user: current } = useUser();
-  const user: UserSummary = { name: [current.first_name, current.last_name].filter(Boolean).join(" ") || current.email, email: current.email, roleLabel: "Admin" };
+  const user: UserSummary = { name: [current.first_name, current.last_name].filter(Boolean).join(" ") || current.email, email: current.email, roleLabel: t("common.administrator") };
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -213,7 +219,7 @@ function UserMenu() {
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Account menu"
+        aria-label={t("shell.accountMenu")}
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-1 text-left transition hover:bg-subtle sm:rounded-lg sm:pr-3"
       >
@@ -242,7 +248,7 @@ function UserMenu() {
             </p>
           </div>
           <div className="pt-2">
-            <Link href="/settings/profile" role="menuitem" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-subtle">Profile</Link><SignOutButton />
+            <Link href="/settings/profile" role="menuitem" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-subtle">{t("common.profile")}</Link><SignOutButton />
           </div>
         </div>
       )}
@@ -251,6 +257,7 @@ function UserMenu() {
 }
 
 export function AppShell({ sections, children, defaultCollapsed = false }: AppShellProps) {
+  const { t } = useI18n();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const closeDrawer = () => setDrawerOpen(false);
@@ -274,7 +281,7 @@ export function AppShell({ sections, children, defaultCollapsed = false }: AppSh
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-brand-foreground"
       >
-        Skip to content
+        {t("nav.skipToContent")}
       </a>
 
       {/* Desktop sidebar */}
@@ -295,7 +302,7 @@ export function AppShell({ sections, children, defaultCollapsed = false }: AppSh
         <button
           type="button"
           onClick={toggleSidebar}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? t("shell.expandSidebar") : t("shell.collapseSidebar")}
           aria-expanded={!collapsed}
           className="absolute -right-3 top-14 z-10 flex size-6 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-surface text-muted shadow-card transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-brand after:absolute after:-inset-2"
         >
@@ -315,7 +322,7 @@ export function AppShell({ sections, children, defaultCollapsed = false }: AppSh
         <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] shrink-0 items-center justify-between gap-3 border-b border-border bg-background/85 px-3 pt-[env(safe-area-inset-top)] backdrop-blur sm:px-4 lg:px-6">
           <button
             type="button"
-            aria-label="Open menu"
+            aria-label={t("nav.openMenu")}
             onClick={() => setDrawerOpen(true)}
             className="flex size-10 items-center justify-center rounded-lg text-muted transition hover:bg-subtle hover:text-foreground lg:hidden"
           >
@@ -326,7 +333,7 @@ export function AppShell({ sections, children, defaultCollapsed = false }: AppSh
           <div className="hidden lg:block" />
 
           <div className="flex items-center gap-2 sm:gap-3">
-            
+            <LanguageSwitcher compact />
             <ThemeToggle />
             <UserMenu />
           </div>

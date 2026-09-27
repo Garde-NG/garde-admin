@@ -1,3 +1,5 @@
+import { defaultLocale, dictionaryFor, type Locale } from "@/lib/i18n/config";
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -8,15 +10,17 @@ export class ApiError extends Error {
 }
 
 /** Server-only transport. No tokens or upstream error bodies are logged. */
-export async function upstream<T>(path: string, body?: unknown, accessToken?: string): Promise<T> {
+export async function upstream<T>(path: string, body?: unknown, accessToken?: string, locale: Locale = defaultLocale): Promise<T> {
+  const dict = dictionaryFor(locale);
   const base = process.env.GARDE_API_URL;
-  if (!base) throw new ApiError(503, "The authentication service is not configured.");
+  if (!base) throw new ApiError(503, dict.api.authServiceMissing);
   let response: Response;
   try {
     response = await fetch(`${base.replace(/\/$/, "")}/auth/${path}`, {
       method: body === undefined ? "GET" : "POST",
       headers: {
-        "Accept-Language": "en",
+        "Accept-Language": locale,
+        "X-Garde-Locale": locale,
         ...(body !== undefined && { "Content-Type": "application/json" }),
         ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
       },
@@ -26,13 +30,13 @@ export async function upstream<T>(path: string, body?: unknown, accessToken?: st
       signal: AbortSignal.timeout(15000),
     });
   } catch {
-    throw new ApiError(503, "Unable to reach the authentication service. Please try again.");
+    throw new ApiError(503, dict.api.accountServiceUnavailable);
   }
   if (response.status === 204) return undefined as T;
   const result = await response.json().catch(() => null);
   if (!response.ok || !result?.success) {
     throw new ApiError(response.ok ? 502 : response.status,
-      typeof result?.message === "string" ? result.message : "The authentication service could not complete this request.",
+      typeof result?.message === "string" ? result.message : dict.api.authServiceRequestFailed,
       Array.isArray(result?.errors) ? result.errors : [],
       response.headers.get("retry-after") ?? undefined);
   }

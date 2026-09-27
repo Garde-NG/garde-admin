@@ -14,11 +14,13 @@ import { getSession } from "next-auth/react";
 import type { TwoFactorMethod } from "@/lib/auth/types";
 import { hasKnownPasskey, rememberPasskey, subscribePasskey } from "@/lib/auth/passkey";
 import { useToast } from "@/components/ui/toast";
+import { useI18n } from "@/lib/i18n/provider";
 
 export function LoginForm({ notice }: { notice?: string }) {
   const signInMutation = useSignIn();
   const passkeyOptions = useAuthMutation<{ options: PublicKeyCredentialRequestOptionsJSON }>();
   const toast = useToast();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [challenge, setChallenge] = useState<{ setupRequired: boolean; method: TwoFactorMethod | null } | null>(null);
@@ -38,7 +40,7 @@ export function LoginForm({ notice }: { notice?: string }) {
         window.location.replace("/dashboard");
       } else {
         const session = await signInMutation.mutateAsync({ mode: "password", email, password });
-        if (!session.challenge) throw new Error("Verification expired. Please sign in again.");
+        if (!session.challenge) throw new Error(t("api.verificationExpired"));
         setChallenge(session.challenge);
         setPassword("");
       }
@@ -50,15 +52,15 @@ export function LoginForm({ notice }: { notice?: string }) {
     if (session?.user?.is_passwordless_enabled) rememberPasskey(session.user.email);
     window.location.replace("/dashboard");
   }
-  return <AuthPanel title={challenge ? challenge.setupRequired ? "Secure your account" : "Verify your sign-in" : "Welcome back"} description={challenge ? "Two-factor authentication keeps your account protected." : "Sign in to your admin account to continue."}>
+  return <AuthPanel title={challenge ? challenge.setupRequired ? t("twoFactor.secureAccount") : t("twoFactor.verifySignIn") : t("auth.signInTitle")} description={challenge ? t("twoFactor.verifyDescription") : t("auth.signInDescription")}>
     {challenge ? <TwoFactor setupRequired={challenge.setupRequired} method={challenge.method} onDone={() => { void done().catch(error => toast.error(messageOf(error))); }} onCancel={() => setChallenge(null)} /> :
       <form className="space-y-5" onSubmit={(event) => { event.preventDefault(); void signIn(); }}>
-        <Field label="Email" name="email" type="email" autoComplete="username webauthn" required value={email} onChange={(event) => setEmail(event.target.value)} error={fields.email} disabled={busy} />
-        <PasswordField label="Password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required error={fields.password} disabled={busy} />
-        <div className="text-right"><Link href="/forgot-password" className="text-sm font-medium text-brand hover:underline">Forgot password?</Link></div>
-        <Button type="submit" fullWidth loading={busy}>Sign in</Button>
-        {knownPasskey && <Button variant="secondary" fullWidth disabled={busy || !email} onClick={() => void signIn(true)}>Sign in with a passkey</Button>}
-        <p className="text-center text-xs text-muted">Admin accounts are invite-only. Contact your administrator for access.</p>
+        <Field label={t("common.email")} name="email" type="email" autoComplete="username webauthn" required value={email} onChange={(event) => setEmail(event.target.value)} error={fields.email} disabled={busy} />
+        <PasswordField label={t("common.password")} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required error={fields.password} disabled={busy} />
+        <div className="text-right"><Link href="/forgot-password" className="text-sm font-medium text-brand hover:underline">{t("auth.forgotPasswordLink")}</Link></div>
+        <Button type="submit" fullWidth loading={busy}>{t("auth.signIn")}</Button>
+        {knownPasskey && <Button variant="secondary" fullWidth disabled={busy || !email} onClick={() => void signIn(true)}>{t("auth.passkeySignIn")}</Button>}
+        <p className="text-center text-xs text-muted">{t("auth.accountInviteOnly")}</p>
       </form>}
   </AuthPanel>;
 }

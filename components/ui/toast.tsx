@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useI18n } from "@/lib/i18n/provider";
 
 type Tone = "success" | "error" | "info";
 
@@ -37,6 +38,7 @@ const TONES: Record<Tone, { ring: string; icon: ReactNode }> = {
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const [items, setItems] = useState<ToastItem[]>([]);
   const nextId = useRef(0);
   const layer = useRef<HTMLDivElement>(null);
@@ -98,7 +100,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => dismiss(item.id)}
-              aria-label="Dismiss"
+              aria-label={t("common.close")}
               className="-m-1 flex size-7 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-subtle hover:text-foreground"
             >
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>

@@ -1,5 +1,6 @@
 import { AuthHero } from "@/components/auth/auth-hero";
 import { Logo } from "@/components/brand/logo";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 /**
@@ -15,7 +16,8 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
       <div className="flex min-w-0 flex-col pb-[env(safe-area-inset-bottom)]">
         <header className="flex items-center gap-4 px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8 sm:pt-[max(1.5rem,env(safe-area-inset-top))]">
           <Logo className="lg:hidden" />
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <LanguageSwitcher compact />
             <ThemeToggle />
           </div>
         </header>

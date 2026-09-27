@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { AuthPanel } from "@/components/auth/auth-panel";
 import { AuthForm } from "@/components/auth/auth-form";
+import { getServerDictionary } from "@/lib/i18n/server";
 export const metadata = { title: "Restore account" };
-export default function RestorePage() {
-  return <AuthPanel title="Restore your account" description="Closed accounts can be restored within 7 days." footer={<Link href="/login" className="text-brand hover:underline">Back to sign in</Link>}><AuthForm mode="restore" /></AuthPanel>;
+export default async function RestorePage() {
+  const dict = await getServerDictionary();
+  return <AuthPanel title={dict.auth.restoreAccountTitle} description={dict.auth.restoreAccountDescription} footer={<Link href="/login" className="text-brand hover:underline">{dict.common.backToSignIn}</Link>}><AuthForm mode="restore" /></AuthPanel>;
 }

@@ -3,6 +3,7 @@
 import { useState, type InputHTMLAttributes } from "react";
 
 import { Field } from "./field";
+import { useI18n } from "@/lib/i18n/provider";
 
 interface PasswordFieldProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "id" | "type"> {
@@ -13,13 +14,7 @@ interface PasswordFieldProps
   showStrength?: boolean;
 }
 
-const LEVELS = [
-  { label: "Too short", color: "bg-danger" },
-  { label: "Weak", color: "bg-danger" },
-  { label: "Fair", color: "bg-amber-500" },
-  { label: "Good", color: "bg-brand" },
-  { label: "Strong", color: "bg-brand" },
-];
+const LEVEL_COLORS = ["bg-danger", "bg-danger", "bg-amber-500", "bg-brand", "bg-brand"] as const;
 
 /** Visual guidance only; enforce password rules from the future API contract. */
 function strength(password: string): number {
@@ -32,9 +27,11 @@ function strength(password: string): number {
 }
 
 export function PasswordField({ showStrength, ...props }: PasswordFieldProps) {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
   const value = typeof props.value === "string" ? props.value : "";
   const level = strength(value);
+  const labels = [t("auth.strengthTooShort"), t("auth.strengthWeak"), t("auth.strengthFair"), t("auth.strengthGood"), t("auth.strengthStrong")];
 
   return (
     <Field
@@ -47,7 +44,7 @@ export function PasswordField({ showStrength, ...props }: PasswordFieldProps) {
           aria-pressed={visible}
           className="rounded-md px-2.5 py-1.5 text-xs font-medium text-muted transition hover:text-foreground pointer-coarse:py-2.5 pointer-coarse:text-sm"
         >
-          {visible ? "Hide" : "Show"}
+          {visible ? t("auth.hidePassword") : t("auth.showPassword")}
         </button>
       }
       footer={
@@ -58,12 +55,12 @@ export function PasswordField({ showStrength, ...props }: PasswordFieldProps) {
                 <span
                   key={step}
                   className={`h-1 flex-1 rounded-full transition-colors ${
-                    step <= level ? LEVELS[level].color : "bg-border"
+                    step <= level ? LEVEL_COLORS[level] : "bg-border"
                   }`}
                 />
               ))}
             </div>
-            <span className="w-14 text-right text-xs text-muted">{LEVELS[level].label}</span>
+            <span className="w-16 text-right text-xs text-muted">{labels[level]}</span>
           </div>
         ) : undefined
       }

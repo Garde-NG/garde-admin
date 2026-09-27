@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { GardeToken } from "@/lib/auth/next-auth-shared";
 import type { Tokens, User } from "@/lib/auth/types";
 import { ApiError, upstream } from "./upstream";
+import { defaultLocale, dictionaryFor, type Locale } from "@/lib/i18n/config";
 const refreshes = new Map<string, Promise<Tokens>>();
 export async function refreshToken(token: GardeToken): Promise<GardeToken> {
   if (!token.tokens) return { ...token, authError: "SessionExpired" };
@@ -24,11 +25,12 @@ export async function refreshToken(token: GardeToken): Promise<GardeToken> {
 export function shouldRefresh(token: GardeToken) {
   return token.authStep === "authenticated" && !!token.tokens && (token.expiresAt ?? 0) < Date.now() + 60000;
 }
-export async function tokenFromLogin(result: Tokens & { user: User }): Promise<GardeToken> {
-  if (!result.access_token || !result.refresh_token || !result.user) throw new ApiError(502, "Invalid sign-in response.");
+export async function tokenFromLogin(result: Tokens & { user: User }, locale: Locale = defaultLocale): Promise<GardeToken> {
+  const dict = dictionaryFor(locale);
+  if (!result.access_token || !result.refresh_token || !result.user) throw new ApiError(502, dict.api.invalidSignInResponse);
   if (result.user.user_type !== "admin" || !result.user.is_two_factor_enabled) {
-    await upstream("logout", { refresh_token: result.refresh_token }).catch(() => undefined);
-    throw new ApiError(403, "This platform is restricted to administrators with two-factor authentication.");
+    await upstream("logout", { refresh_token: result.refresh_token }, undefined, locale).catch(() => undefined);
+    throw new ApiError(403, dict.api.adminRestricted);
   }
   return {
     sub: result.user.id, authStep: "authenticated", user: result.user,
