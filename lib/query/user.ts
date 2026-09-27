@@ -1,6 +1,7 @@
 "use client";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { authRequest } from "@/lib/auth/client";
+import { authRequest, currentLocale } from "@/lib/auth/client";
+import { localizedPath } from "@/lib/i18n/routing";
 import type { User } from "@/lib/auth/types";
 export const userKey = ["account", "me"] as const;
 export function useCurrentUser() {
@@ -10,7 +11,7 @@ export function useCurrentUser() {
       try { return await authRequest<User>("me", undefined, signal); }
       catch (error) {
         const { AuthError } = await import("@/lib/auth/client");
-        if (error instanceof AuthError && [401, 403].includes(error.status)) window.location.replace("/login?reason=expired");
+        if (error instanceof AuthError && [401, 403].includes(error.status)) window.location.replace(localizedPath("/login?reason=expired", currentLocale()));
         throw error;
       }
     },

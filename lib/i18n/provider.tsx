@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { dictionaryFor, isLocale, LOCALE_COOKIE, type Dictionary, type Locale } from "./config";
+import { localizedPath, replacePathLocale } from "./routing";
 
 type Section = keyof Dictionary;
 type MessageKey<S extends Section> = keyof Dictionary[S] & string;
@@ -11,6 +12,7 @@ export type MessagePath = { [S in Section]: `${S}.${MessageKey<S>}` }[Section];
 interface I18nContextValue {
   locale: Locale;
   dictionary: Dictionary;
+  href: (path: string) => string;
   setLocale: (locale: Locale) => void;
   t: (path: MessagePath) => string;
 }
@@ -25,6 +27,7 @@ function read(path: MessagePath, dictionary: Dictionary): string {
 
 export function LanguageProvider({ initialLocale, children }: { initialLocale: Locale; children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [locale, setLocaleState] = useState(initialLocale);
   const dictionary = dictionaryFor(locale);
 
@@ -38,13 +41,14 @@ export function LanguageProvider({ initialLocale, children }: { initialLocale: L
       document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
       document.documentElement.lang = next;
       setLocaleState(next);
+      router.replace(replacePathLocale(pathname, next));
       router.refresh();
     },
-    [router],
+    [pathname, router],
   );
 
   const value = useMemo<I18nContextValue>(
-    () => ({ locale, dictionary, setLocale, t: (path) => read(path, dictionary) }),
+    () => ({ locale, dictionary, href: (path) => localizedPath(path, locale), setLocale, t: (path) => read(path, dictionary) }),
     [dictionary, locale, setLocale],
   );
 

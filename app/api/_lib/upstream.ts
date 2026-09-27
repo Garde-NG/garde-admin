@@ -9,15 +9,26 @@ export class ApiError extends Error {
   ) { super(message); }
 }
 
+interface UpstreamOptions {
+  body?: unknown;
+  accessToken?: string;
+  locale?: Locale;
+  method?: "GET" | "POST";
+  search?: URLSearchParams;
+}
+
 /** Server-only transport. No tokens or upstream error bodies are logged. */
-export async function upstream<T>(path: string, body?: unknown, accessToken?: string, locale: Locale = defaultLocale): Promise<T> {
+export async function upstreamRequest<T>(resource: string, path = "", options: UpstreamOptions = {}): Promise<T> {
+  const { body, accessToken, locale = defaultLocale, method, search } = options;
   const dict = dictionaryFor(locale);
   const base = process.env.GARDE_API_URL;
   if (!base) throw new ApiError(503, dict.api.authServiceMissing);
+  const url = new URL(`${base.replace(/\/$/, "")}/${resource}${path ? `/${path.replace(/^\//, "")}` : ""}`);
+  if (search) url.search = search.toString();
   let response: Response;
   try {
-    response = await fetch(`${base.replace(/\/$/, "")}/auth/${path}`, {
-      method: body === undefined ? "GET" : "POST",
+    response = await fetch(url, {
+      method: method ?? (body === undefined ? "GET" : "POST"),
       headers: {
         "Accept-Language": locale,
         "X-Garde-Locale": locale,
@@ -41,4 +52,8 @@ export async function upstream<T>(path: string, body?: unknown, accessToken?: st
       response.headers.get("retry-after") ?? undefined);
   }
   return result.data as T;
+}
+
+export async function upstream<T>(path: string, body?: unknown, accessToken?: string, locale: Locale = defaultLocale): Promise<T> {
+  return upstreamRequest<T>("auth", path, { body, accessToken, locale });
 }

@@ -10,6 +10,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Logo, LogoMark } from "@/components/brand/logo";
 
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { type NavIcon, type NavSection } from "@/lib/navigation";
 import { useI18n } from "@/lib/i18n/provider";
@@ -78,7 +79,7 @@ interface Tip {
 
 function Navigation({ sections, onNavigate, collapsed = false }: { sections: NavSection[]; onNavigate?: () => void; collapsed?: boolean }) {
   const pathname = usePathname();
-  const { t } = useI18n();
+  const { href, t } = useI18n();
   const [tip, setTip] = useState<Tip | null>(null);
 
   // A native `title` would be clipped by this scrolling list, so the rail draws its own tooltip.
@@ -114,12 +115,13 @@ function Navigation({ sections, onNavigate, collapsed = false }: { sections: Nav
           {collapsed && index > 0 && <div aria-hidden className="mx-2 mb-3 border-t border-border" />}
           <ul className="space-y-0.5">
             {section.items.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const localizedHref = href(item.href);
+              const active = pathname === localizedHref || pathname.startsWith(`${localizedHref}/`);
               const label = t(item.labelKey);
               return (
                 <li key={item.href}>
                   <Link
-                    href={item.href}
+                    href={localizedHref}
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
                     onPointerEnter={(event) => showTip(label, event.currentTarget)}
@@ -191,7 +193,7 @@ function Drawer({
 }
 
 function UserMenu() {
-  const { t } = useI18n();
+  const { href, t } = useI18n();
   const { user: current } = useUser();
   const user: UserSummary = { name: [current.first_name, current.last_name].filter(Boolean).join(" ") || current.email, email: current.email, roleLabel: t("common.administrator") };
   const [open, setOpen] = useState(false);
@@ -248,7 +250,7 @@ function UserMenu() {
             </p>
           </div>
           <div className="pt-2">
-            <Link href="/settings/profile" role="menuitem" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-subtle">{t("common.profile")}</Link><SignOutButton />
+            <Link href={href("/settings/profile")} role="menuitem" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-subtle">{t("common.profile")}</Link><SignOutButton />
           </div>
         </div>
       )}
@@ -333,6 +335,7 @@ export function AppShell({ sections, children, defaultCollapsed = false }: AppSh
           <div className="hidden lg:block" />
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <NotificationBell />
             <LanguageSwitcher compact />
             <ThemeToggle />
             <UserMenu />

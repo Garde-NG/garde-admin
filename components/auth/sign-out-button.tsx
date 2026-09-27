@@ -11,11 +11,11 @@ import { useI18n } from "@/lib/i18n/provider";
 export function SignOutButton({ children }: { children?: ReactNode }) {
   const client = useQueryClient();
   const toast = useToast();
-  const { t } = useI18n();
+  const { href, t } = useI18n();
   const [confirming, setConfirming] = useState(false);
   const logout = useMutation({
     mutationFn: () => signOut({ redirect: false }),
-    onSuccess: () => { client.clear(); window.location.replace("/login"); },
+    onSuccess: () => { client.clear(); window.location.replace(href("/login")); },
     onError: () => toast.error(t("shell.signOutFailed")),
   });
   return <>

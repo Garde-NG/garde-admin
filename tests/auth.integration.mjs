@@ -118,7 +118,9 @@ test("admin authentication contract and session boundaries", { timeout: 120000 }
   const c = client();
   await t.test("protects routes, proxy allowlist and CSRF boundaries", async () => {
     const page = await fetch(origin + "/dashboard", { redirect: "manual" });
-    assert.equal(page.status, 307); assert.equal(page.headers.get("location"), "/login");
+    assert.equal(page.status, 307); assert.equal(page.headers.get("location"), "/en/dashboard");
+    const localizedPage = await fetch(origin + "/en/dashboard", { redirect: "manual" });
+    assert.equal(localizedPage.status, 307); assert.equal(localizedPage.headers.get("location"), "/en/login");
     assert.equal((await c.proxy("me")).status, 401);
     assert.equal((await c.proxy("forgot-password", {}, { Origin: "https://attacker.example" })).status, 403);
     assert.equal((await c.proxy("signup", {})).status, 404);

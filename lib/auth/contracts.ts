@@ -31,6 +31,6 @@ export const privateOperations = new Set<AuthOperation>([
   "webauthn/register/options", "webauthn/register/verify", "close-account",
 ]);
 export function safeReturnPath(value: string | null): string {
-  return value && /^\/(dashboard|settings(?:\/profile|\/security)?)(?:\?[^\\]*)?$/.test(value)
+  return value && /^(?:\/(?:en|fr))?\/(dashboard|settings(?:\/profile|\/security)?)(?:\?[^\\]*)?$/.test(value)
     ? value : "/dashboard";
 }

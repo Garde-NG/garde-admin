@@ -12,7 +12,7 @@ type Mode = "forgot" | "reset" | "change" | "restore";
 export function AuthForm({ mode }: { mode: Mode }) {
   const mutation = useAuthMutation();
   const toast = useToast();
-  const { t } = useI18n();
+  const { href, t } = useI18n();
   const [resetting, setResetting] = useState(mode === "reset");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -33,10 +33,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
         toast.success(t("auth.resetCodeSent"));
       } else if (resetting) {
         await mutation.mutateAsync({ operation: "reset-password", body: { email, otp, new_password: password } });
-        window.location.replace("/login?reason=reset");
+        window.location.replace(href("/login?reason=reset"));
       } else if (mode === "restore") {
         await mutation.mutateAsync({ operation: "restore-account", body: { email, password } });
-        window.location.replace("/login?reason=restored");
+        window.location.replace(href("/login?reason=restored"));
       } else {
         await mutation.mutateAsync({ operation: "change-password", body: { current_password: current, new_password: password } });
         setPassword(""); setConfirm(""); setCurrent("");

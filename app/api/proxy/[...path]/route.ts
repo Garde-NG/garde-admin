@@ -1,53 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { contracts, privateOperations, type AuthOperation } from "@/lib/auth/contracts";
 import { clearAuthCookie, readAuthToken, writeAuthToken } from "@/lib/auth/next-auth-cookie";
-import type { GardeToken } from "@/lib/auth/next-auth-shared";
 import type { Setup, User } from "@/lib/auth/types";
 import { ApiError, upstream } from "../../_lib/upstream";
-import { refreshToken, shouldRefresh } from "../../_lib/token";
-import { dictionaryFor, normalizeLocale, type Locale } from "@/lib/i18n/config";
+import { dictionaryFor } from "@/lib/i18n/config";
+import { requireApiAccount } from "../../_lib/account";
+import { localeFromRequest } from "../../_lib/request-locale";
 export const runtime = "nodejs";
 const noStore = { "Cache-Control": "no-store" };
 const publicOperations = new Set(["forgot-password", "reset-password", "restore-account", "webauthn/login/options", "2fa/setup"]);
 function success(data: unknown = null) { return NextResponse.json({ success: true, data }, { headers: noStore }); }
-function localeFromRequest(request: NextRequest): Locale {
-  return normalizeLocale(request.headers.get("x-garde-locale") ?? request.cookies.get("garde-locale")?.value ?? request.headers.get("accept-language"));
-}
-async function refresh(token: GardeToken, locale: Locale) {
-  const dict = dictionaryFor(locale);
-  const next = await refreshToken(token);
-  if (next.authError === "SessionExpired") {
-    await clearAuthCookie();
-    throw new ApiError(401, dict.api.sessionEnded);
-  }
-  if (next.authError) throw new ApiError(503, dict.api.accountServiceUnavailable);
-  await writeAuthToken(next);
-  return next;
-}
-async function requireAccount(locale: Locale) {
-  const dict = dictionaryFor(locale);
-  let token = await readAuthToken();
-  if (token?.authStep !== "authenticated" || !token.tokens) throw new ApiError(401, dict.api.signInAgain);
-  if (shouldRefresh(token)) token = await refresh(token, locale);
-  let user: User;
-  try { user = await upstream<User>("me", undefined, token.tokens!.access_token, locale); }
-  catch (error) {
-    if (!(error instanceof ApiError) || error.status !== 401) throw error;
-    token = await refresh(token, locale);
-    try { user = await upstream<User>("me", undefined, token.tokens!.access_token, locale); }
-    catch (error) {
-      if (error instanceof ApiError && error.status === 401) await clearAuthCookie();
-      throw error;
-    }
-  }
-  if (user.user_type !== "admin" || !user.is_two_factor_enabled) {
-    await clearAuthCookie();
-    throw new ApiError(403, dict.api.adminRestricted);
-  }
-  token.user = user;
-  await writeAuthToken(token);
-  return { token, user };
-}
 async function handle(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const locale = localeFromRequest(request);
   const dict = dictionaryFor(locale);
@@ -57,7 +19,7 @@ async function handle(request: NextRequest, context: { params: Promise<{ path: s
     if (group !== "auth") throw new ApiError(404, dict.api.notFound);
     if (request.method === "GET") {
       if (parts.join("/") !== "me") throw new ApiError(404, dict.api.notFound);
-      return success((await requireAccount(locale)).user);
+      return success((await requireApiAccount(locale)).user);
     }
     if (request.headers.get("origin") !== (process.env.APP_ORIGIN || request.nextUrl.origin) || request.headers.get("sec-fetch-site") === "cross-site")
       throw new ApiError(403, dict.api.originNotAllowed);
@@ -71,7 +33,7 @@ async function handle(request: NextRequest, context: { params: Promise<{ path: s
     const parsed = contracts[operation].safeParse(input);
     if (!parsed.success) throw new ApiError(422, dict.api.checkFields, parsed.error.issues.map(issue => ({ field: String(issue.path[0]), message: issue.message })));
     if (privateOperations.has(operation)) {
-      const { token } = await requireAccount(locale);
+      const { token } = await requireApiAccount(locale);
       // An action's 401 can mean wrong password/code; do not invalidate the session.
       const data = await upstream(operation, parsed.data, token.tokens!.access_token, locale);
       if (operation === "close-account") await clearAuthCookie();

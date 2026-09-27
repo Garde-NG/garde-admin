@@ -18,7 +18,7 @@ export function SecuritySettings() {
   const mutation = useAuthMutation();
   const { user, refreshUser } = useUser();
   const toast = useToast();
-  const { t } = useI18n();
+  const { href, t } = useI18n();
   const [changing, setChanging] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -47,7 +47,7 @@ export function SecuritySettings() {
     setBusy(true); setError("");
     try {
       await mutation.mutateAsync({ operation: "close-account", body: { password } });
-      window.location.replace("/login?reason=closed");
+      window.location.replace(href("/login?reason=closed"));
     } catch (error) { const message = messageOf(error); setError(message); toast.error(message); }
     finally { setBusy(false); }
   }

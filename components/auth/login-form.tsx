@@ -20,7 +20,7 @@ export function LoginForm({ notice }: { notice?: string }) {
   const signInMutation = useSignIn();
   const passkeyOptions = useAuthMutation<{ options: PublicKeyCredentialRequestOptionsJSON }>();
   const toast = useToast();
-  const { t } = useI18n();
+  const { href, t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [challenge, setChallenge] = useState<{ setupRequired: boolean; method: TwoFactorMethod | null } | null>(null);
@@ -37,7 +37,7 @@ export function LoginForm({ notice }: { notice?: string }) {
         const { options } = await passkeyOptions.mutateAsync({ operation: "webauthn/login/options", body: { email } });
         const credential = await startAuthentication({ optionsJSON: options });
         await signInMutation.mutateAsync({ mode: "passkey", email, credential: JSON.stringify(credential) });
-        window.location.replace("/dashboard");
+        window.location.replace(href("/dashboard"));
       } else {
         const session = await signInMutation.mutateAsync({ mode: "password", email, password });
         if (!session.challenge) throw new Error(t("api.verificationExpired"));
@@ -50,14 +50,14 @@ export function LoginForm({ notice }: { notice?: string }) {
   async function done() {
     const session = await getSession();
     if (session?.user?.is_passwordless_enabled) rememberPasskey(session.user.email);
-    window.location.replace("/dashboard");
+    window.location.replace(href("/dashboard"));
   }
   return <AuthPanel title={challenge ? challenge.setupRequired ? t("twoFactor.secureAccount") : t("twoFactor.verifySignIn") : t("auth.signInTitle")} description={challenge ? t("twoFactor.verifyDescription") : t("auth.signInDescription")}>
     {challenge ? <TwoFactor setupRequired={challenge.setupRequired} method={challenge.method} onDone={() => { void done().catch(error => toast.error(messageOf(error))); }} onCancel={() => setChallenge(null)} /> :
       <form className="space-y-5" onSubmit={(event) => { event.preventDefault(); void signIn(); }}>
         <Field label={t("common.email")} name="email" type="email" autoComplete="username webauthn" required value={email} onChange={(event) => setEmail(event.target.value)} error={fields.email} disabled={busy} />
         <PasswordField label={t("common.password")} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required error={fields.password} disabled={busy} />
-        <div className="text-right"><Link href="/forgot-password" className="text-sm font-medium text-brand hover:underline">{t("auth.forgotPasswordLink")}</Link></div>
+        <div className="text-right"><Link href={href("/forgot-password")} className="text-sm font-medium text-brand hover:underline">{t("auth.forgotPasswordLink")}</Link></div>
         <Button type="submit" fullWidth loading={busy}>{t("auth.signIn")}</Button>
         {knownPasskey && <Button variant="secondary" fullWidth disabled={busy || !email} onClick={() => void signIn(true)}>{t("auth.passkeySignIn")}</Button>}
         <p className="text-center text-xs text-muted">{t("auth.accountInviteOnly")}</p>
