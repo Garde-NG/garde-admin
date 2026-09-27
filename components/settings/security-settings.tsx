@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { startRegistration, type PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/browser";
 import { useUser } from "@/lib/query/user";
 import { AuthForm } from "@/components/auth/auth-form";
@@ -22,6 +22,7 @@ export function SecuritySettings() {
   const [closing, setClosing] = useState(false);
   const [password, setPassword] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
+  const currentMethod = user.two_factor_method;
   useEffect(() => {
     if (closing) dialog.current?.showModal();
     else dialog.current?.close();
@@ -53,10 +54,23 @@ export function SecuritySettings() {
     {notice && <Alert tone="success">{notice}</Alert>}
     <section className={card}>
       <h2 className="font-semibold">Two-factor authentication</h2>
-      <p className="mt-1 mb-5 text-sm text-muted">Required for your account. Current method: {user.two_factor_method === "totp" ? "Authenticator app" : "Email verification"}.</p>
-      {changing ? <TwoFactor changing setupRequired={false} method={user.two_factor_method}
+      <p className="mt-1 mb-5 text-sm text-muted">Required for your account. Your active security method is marked below and cannot be selected again.</p>
+      {changing ? <TwoFactor changing setupRequired={false} method={currentMethod}
         onDone={() => { setChanging(false); void refreshUser().then(() => setNotice("Verification method updated.")).catch(error => setError(messageOf(error))); }}
-        onCancel={() => setChanging(false)} /> : <Button variant="secondary" onClick={() => { setChanging(true); setError(""); setNotice(""); }}>Change verification method</Button>}
+        onCancel={() => setChanging(false)} /> : <div className="space-y-3">
+          <MethodCard
+            title="Email verification"
+            description="Receive a 6-digit code by email when you sign in."
+            active={currentMethod === "email_otp"}
+            action={currentMethod === "email_otp" ? <Button variant="secondary" disabled>Current method</Button> : <Button variant="secondary" onClick={() => { setChanging(true); setError(""); setNotice(""); }}>Switch to email</Button>}
+          />
+          <MethodCard
+            title="Authenticator app"
+            description="Use codes from Google Authenticator, 1Password, Authy, or a similar app."
+            active={currentMethod === "totp"}
+            action={currentMethod === "totp" ? <Button variant="secondary" disabled>Current method</Button> : <Button variant="secondary" onClick={() => { setChanging(true); setError(""); setNotice(""); }}>Switch to app</Button>}
+          />
+        </div>}
     </section>
     <section className={card}>
       <h2 className="font-semibold">Passkeys</h2>
@@ -80,4 +94,19 @@ export function SecuritySettings() {
       </form>
     </dialog>
   </div>;
+}
+
+function MethodCard({ title, description, active, action }: { title: string; description: string; active: boolean; action: ReactNode }) {
+  return (
+    <div className={`flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between ${active ? "border-brand bg-brand-soft" : "border-border bg-surface"}`}>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="font-medium">{title}</h3>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${active ? "bg-success-soft text-success" : "bg-subtle text-muted"}`}>{active ? "Your method" : "Available"}</span>
+        </div>
+        <p className="mt-1 text-sm text-muted">{active ? "This is the security method currently enabled on your account." : description}</p>
+      </div>
+      <div className="shrink-0">{action}</div>
+    </div>
+  );
 }

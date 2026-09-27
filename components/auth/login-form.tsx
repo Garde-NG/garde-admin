@@ -58,7 +58,6 @@ export function LoginForm({ notice }: { notice?: string }) {
         <Button type="submit" fullWidth loading={busy}>Sign in</Button>
         {knownPasskey && <Button variant="secondary" fullWidth disabled={busy || !email} onClick={() => void signIn(true)}>Sign in with a passkey</Button>}
         <p className="text-center text-xs text-muted">Admin accounts are invite-only. Contact your administrator for access.</p>
-        <div className="text-center"><Link href="/restore-account" className="text-xs text-muted hover:text-brand">Restore a closed account</Link></div>
       </form>}
     {challenge && error && <div className="mt-4"><Alert tone="error">{error}</Alert></div>}
   </AuthPanel>;
