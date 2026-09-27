@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { themeInitScript } from "@/lib/theme";
+import { AppProviders } from "@/components/providers/app-providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -45,7 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="min-h-dvh flex flex-col font-sans">{children}</body>
+      <body className="min-h-dvh flex flex-col font-sans"><AppProviders>{children}</AppProviders></body>
     </html>
   );
 }

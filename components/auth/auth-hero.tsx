@@ -25,7 +25,7 @@ export function AuthHero() {
       <div aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-black/85 via-black/20 to-black/40" />
 
       <div className="flex h-full flex-col justify-between p-8 xl:p-12 2xl:p-16">
-        <Logo className="text-white" />
+        <Logo inverse />
 
         <div className="max-w-xl space-y-4 pb-2">
           <h2 className="text-balance text-3xl font-semibold leading-[1.1] tracking-tight xl:text-4xl 2xl:text-5xl">

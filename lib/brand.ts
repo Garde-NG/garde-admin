@@ -1,6 +1,6 @@
-/** Replace these placeholder URLs when the final brand assets are available. */
+/** Full wordmark and compact mark supplied in public/images/logo. */
 export const BRAND = {
   name: "Garde",
-  logoUrl: "/logo-placeholder.svg",
-  collapsedLogoUrl: "/logo-mark-placeholder.svg",
+  logoUrl: "/images/logo/logo.svg",
+  collapsedLogoUrl: "/images/logo/logo-collaspes.svg",
 } as const;

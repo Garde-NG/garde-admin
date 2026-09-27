@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useUser } from "@/lib/query/user";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -184,7 +186,8 @@ function Drawer({
 }
 
 function UserMenu() {
-  const user: UserSummary = { name: "Preview account", email: null, roleLabel: "Admin" };
+  const { user: current } = useUser();
+  const user: UserSummary = { name: [current.first_name, current.last_name].filter(Boolean).join(" ") || current.email, email: current.email, roleLabel: "Admin" };
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -239,7 +242,7 @@ function UserMenu() {
             </p>
           </div>
           <div className="pt-2">
-            <Link href="/settings/profile" role="menuitem" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-subtle">Profile</Link><Link href="/login" role="menuitem" className="block rounded-lg px-3 py-2 text-sm text-muted hover:bg-subtle">Exit preview</Link>
+            <Link href="/settings/profile" role="menuitem" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-subtle">Profile</Link><SignOutButton />
           </div>
         </div>
       )}
