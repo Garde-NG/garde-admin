@@ -42,6 +42,23 @@ export function NotificationBell() {
   const retry = useRef(0);
   const closedByUnmount = useRef(false);
   const triedRefreshAfter4401 = useRef(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!popoverRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
 
   const items = useMemo(() => query.data?.items ?? [], [query.data?.items]);
   const unread = useMemo(() => items.filter((item) => !item.is_read).length, [items]);
@@ -112,7 +129,7 @@ export function NotificationBell() {
   };
 
   return (
-    <div className="relative">
+    <div ref={popoverRef} className="relative">
       <button
         type="button"
         aria-label={t("notifications.open")}
