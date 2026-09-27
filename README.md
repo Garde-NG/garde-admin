@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Garde Admin
 
-## Getting Started
+A presentation scaffold using the EV admin platform's visual system and shared UI components.
 
-First, run the development server:
+## Run
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- npm install
+- npm run dev
+- npm run lint
+- npm run build
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The root redirects to /login. Use **Preview dashboard** to inspect the shell without signing in.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Included routes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- /login
+- /forgot-password
+- /reset-password
+- /change-password-required
+- /dashboard (intentionally empty)
+- /settings/profile
+- /settings/security
+- /settings redirects to /settings/profile
 
-## Learn More
+## Integration status
 
-To learn more about Next.js, take a look at the following resources:
+This is a UI preview, not an authenticated application. Dashboard and settings routes are currently public and contain no account data. Form submissions do not send requests, create sessions, reset passwords, or save profile changes. Passwords are never persisted. Security setup is disabled until integration.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+When endpoint documentation arrives, add server-side session verification to the dashboard layout and authenticated data access, connect the auth/profile forms, and remove the preview entry point. Determine password rules, reset token handling, and two-factor challenges from the API contract. No EV API configuration, credentials, or environment files were copied.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Logos
 
-## Deploy on Vercel
+Update lib/brand.ts:
+- logoUrl: full logo used throughout auth and expanded navigation.
+- collapsedLogoUrl: compact logo used only in the collapsed sidebar.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Both currently point to local dummy SVG URLs. Absolute image URLs also work.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Design guide
+
+See DESIGN.md for the inherited colors, typography, spacing, and interaction conventions.
