@@ -10,10 +10,11 @@ import { useI18n } from "@/lib/i18n/provider";
 import { useUsers } from "@/lib/query/users";
 import { Pagination } from "@/components/ui/pagination";
 import { UserStatusBadge } from "@/components/users/user-status-badge";
+import { KycStatusBadge } from "@/components/users/kyc-status-badge";
 import { InviteAdminModal } from "@/components/users/invite-admin-modal";
 import type { AdminUser } from "@/lib/users/types";
 
-const ROW_GRID = "md:grid-cols-[minmax(0,1.45fr)_8rem_minmax(0,1fr)_7rem_7.5rem]";
+const ROW_GRID = "md:grid-cols-[minmax(0,1.45fr)_7rem_7.5rem_minmax(0,1fr)_7rem_7.5rem]";
 
 function formatDate(value: string | null, locale: string) {
   if (!value) return null;
@@ -119,6 +120,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
             <div className={`hidden gap-4 bg-subtle/70 px-6 py-3 text-xs font-semibold uppercase text-muted md:grid ${ROW_GRID}`}>
               <span>{t("users.columnPerson")}</span>
               <span>{t("users.userType")}</span>
+              <span>{t("users.kycStatus")}</span>
               <span>{t("users.columnContact")}</span>
               <span>{t("users.columnSecurity")}</span>
               <span>{t("common.status")}</span>
@@ -135,6 +137,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
                         </div>
                       </div>
                       <div><span className="capitalize text-sm text-muted md:text-foreground">{user.user_type === "admin" ? t("users.admin") : t("users.customer")}</span></div>
+                      <div><KycStatusBadge status={user.kyc_status} /></div>
                       <div className="min-w-0 text-sm">
                         <p className="truncate">{user.email}</p>
                         <p className="truncate text-xs text-muted">{user.phone_number}</p>

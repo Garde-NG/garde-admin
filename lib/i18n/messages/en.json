@@ -450,7 +450,15 @@
     "lastUpdated": "Last updated",
     "inviteAccepted": "Invite accepted",
     "twoFactorMethod": "2FA method",
-    "securityFieldsHint": "Security fields reflect the latest account response from the API."
+    "securityFieldsHint": "Security fields reflect the latest account response from the API.",
+    "kycStatus": "KYC status",
+    "kycNotApplicable": "N/A",
+    "kycNotStarted": "Not started",
+    "kycPending": "Pending",
+    "kycInReview": "In review",
+    "kycApproved": "Approved",
+    "kycDeclined": "Declined",
+    "kycExpired": "Expired"
   },
   "platformSetup": {
     "title": "Platform Setup",

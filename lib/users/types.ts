@@ -1,4 +1,4 @@
-import type { TwoFactorMethod } from "@/lib/auth/types";
+import type { KycStatus, TwoFactorMethod } from "@/lib/auth/types";
 
 export type AdminUserType = "customer" | "admin";
 
@@ -12,6 +12,7 @@ export interface AdminUser {
   is_two_factor_enabled: boolean;
   two_factor_method: TwoFactorMethod | null;
   is_passwordless_enabled: boolean;
+  kyc_status: KycStatus | null;
   last_login_at: string | null;
   is_suspended: boolean;
   suspended_at: string | null;

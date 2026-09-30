@@ -1,4 +1,6 @@
 export type TwoFactorMethod = "email_otp" | "totp";
+export type KycStatus = "not_started" | "pending" | "in_review" | "approved" | "declined" | "expired";
+
 export interface User {
   id: string;
   first_name: string;
@@ -9,6 +11,7 @@ export interface User {
   is_two_factor_enabled: boolean;
   two_factor_method: TwoFactorMethod | null;
   is_passwordless_enabled: boolean;
+  kyc_status: KycStatus | null;
   created_at: string;
   updated_at: string;
 }

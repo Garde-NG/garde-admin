@@ -11,6 +11,7 @@ import { useI18n } from "@/lib/i18n/provider";
 import { useAdminUser, useUserActions } from "@/lib/query/users";
 import { useUser } from "@/lib/query/user";
 import { UserStatusBadge } from "@/components/users/user-status-badge";
+import { KycStatusBadge } from "@/components/users/kyc-status-badge";
 
 function formatDateTime(value: string | null, locale: string) {
   if (!value) return null;
@@ -191,6 +192,7 @@ export function UserDetailPage({ id }: { id: string }) {
                   <Row label={t("users.phone")} value={<CopyValue value={target.phone_number} />} />
                   <Row label={t("users.email")} value={<CopyValue value={target.email} />} />
                   <Row label={t("users.userType")} value={target.user_type === "admin" ? t("users.admin") : t("users.customer")} />
+                  <Row label={t("users.kycStatus")} value={<KycStatusBadge status={target.kyc_status} />} />
                 </dl>
               </section>
 

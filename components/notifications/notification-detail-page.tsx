@@ -11,8 +11,16 @@ function formatDateTime(value: string) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "full", timeStyle: "short" }).format(new Date(value));
 }
 
-function relatedPath(path: string | null): string | null {
+function stringParam(value: unknown): string | null {
+  return typeof value === "string" && value ? value : null;
+}
+
+function relatedPath(path: string | null, params: Record<string, unknown>): string | null {
   if (!path || !path.startsWith("/") || path.startsWith("//")) return null;
+  if (path === "/admin/users" || path === "/admin/users/") {
+    const userId = stringParam(params.user_id);
+    return userId ? `/users/${userId}` : "/customers";
+  }
   if (path.startsWith("/account/security")) return "/settings/security";
   if (path.startsWith("/account")) return "/settings/profile";
   return path;
@@ -32,7 +40,7 @@ export function NotificationDetailPage({ id }: { id: string }) {
     markRead.mutate(notification.id);
   }, [notification, markRead]);
 
-  const actionPath = relatedPath(notification?.web_route ?? null);
+  const actionPath = notification ? relatedPath(notification.web_route, notification.params) : null;
 
   return (
     <div className="mx-auto max-w-3xl">
