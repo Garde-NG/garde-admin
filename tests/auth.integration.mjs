@@ -7,7 +7,7 @@ import { randomBytes } from "node:crypto";
 // Runs the production Next app against an isolated, contract-shaped upstream.
 // Never sends credentials to the developer's real API.
 test("admin authentication contract and session boundaries", { timeout: 120000 }, async (t) => {
-  const user = { id: "test-admin", first_name: "Test", last_name: "Admin", email: "admin@example.com", phone_number: "+2348000000000", user_type: "admin", is_two_factor_enabled: true, two_factor_method: "email_otp", is_passwordless_enabled: false, created_at: "", updated_at: "" };
+  const user = { id: "test-admin", first_name: "Test", last_name: "Admin", email: "admin@example.com", phone_number: "+2348000000000", user_type: "admin", is_two_factor_enabled: true, two_factor_method: "email_otp", is_passwordless_enabled: false, kyc_status: null, created_at: "", updated_at: "" };
   let role = "admin", setup = false, expires = 7200, revoked = false, failLogout = false, failMe = false, unavailable = false, rateLimited = false;
   let refreshCount = 0, lastSetupToken = "", logoutCount = 0, tokenId = 0, largeTokens = false;
   const tokens = () => ({ access_token: "private-access-" + ++tokenId + (largeTokens ? "x".repeat(4500) : ""), refresh_token: "private-refresh-" + tokenId, expires_in: expires, user: { ...user, user_type: role } });

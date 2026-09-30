@@ -458,7 +458,17 @@
     "kycInReview": "In review",
     "kycApproved": "Approved",
     "kycDeclined": "Declined",
-    "kycExpired": "Expired"
+    "kycExpired": "Expired",
+    "sortBy": "Sort by",
+    "sortOrder": "Sort order",
+    "sortCreatedAt": "Signup date",
+    "sortLastLogin": "Last login",
+    "sortEmail": "Email",
+    "sortFirstName": "First name",
+    "sortLastName": "Last name",
+    "sortDescending": "Descending",
+    "sortAscending": "Ascending",
+    "resetFilters": "Reset filters"
   },
   "platformSetup": {
     "title": "Platform Setup",

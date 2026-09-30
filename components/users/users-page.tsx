@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ConfigPageHeader, EmptyState, ErrorState, Icon, SearchInput, SkeletonRows } from "@/components/dashboard/screen-kit";
 import { Button } from "@/components/ui/button";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Select } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n/provider";
 import { useUsers } from "@/lib/query/users";
@@ -14,7 +15,7 @@ import { KycStatusBadge } from "@/components/users/kyc-status-badge";
 import { InviteAdminModal } from "@/components/users/invite-admin-modal";
 import type { AdminUser } from "@/lib/users/types";
 
-const ROW_GRID = "md:grid-cols-[minmax(0,1.45fr)_7rem_7.5rem_minmax(0,1fr)_7rem_7.5rem]";
+const ROW_GRID = "md:grid-cols-[minmax(0,1.35fr)_7rem_7.5rem_minmax(0,1fr)_8rem_7.5rem]";
 
 function formatDate(value: string | null, locale: string) {
   if (!value) return null;
@@ -44,8 +45,12 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
   const isSuspendedParam = searchParams.get("is_suspended");
   const isSuspended = isSuspendedParam === "true" ? true : isSuspendedParam === "false" ? false : undefined;
   const includeDeleted = searchParams.get("include_deleted") === "true";
+  const createdAfter = searchParams.get("created_after") ?? "";
+  const createdBefore = searchParams.get("created_before") ?? "";
+  const sortBy = (searchParams.get("sort_by") as "created_at" | "last_login_at" | "email" | "first_name" | "last_name" | null) ?? "created_at";
+  const sortOrder = (searchParams.get("sort_order") as "asc" | "desc" | null) ?? "desc";
 
-  const query = useUsers({ page, pageSize: 20, q: q || undefined, userType, isSuspended, includeDeleted });
+  const query = useUsers({ page, pageSize: 20, q: q || undefined, userType, isSuspended, includeDeleted, createdAfter: createdAfter || undefined, createdBefore: createdBefore || undefined, sortBy, sortOrder });
   const items = useMemo(() => query.data?.items ?? [], [query.data?.items]);
   const totalPages = query.data?.meta.total_pages ?? 1;
 
@@ -104,6 +109,30 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
             </button>
             <Button type="submit" variant="secondary">{t("common.search")}</Button>
           </form>
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_12rem_auto]">
+            <DateRangePicker
+              compact
+              from={createdAfter}
+              to={createdBefore}
+              onApply={(range) => setParams({ created_after: range.from || null, created_before: range.to || null, page: 1 })}
+            />
+            <Select label={t("users.sortBy")} hideLabel value={sortBy} onChange={(e) => setParams({ sort_by: e.target.value === "created_at" ? null : e.target.value, page: 1 })}>
+              <option value="created_at">{t("users.sortCreatedAt")}</option>
+              <option value="last_login_at">{t("users.sortLastLogin")}</option>
+              <option value="email">{t("users.sortEmail")}</option>
+              <option value="first_name">{t("users.sortFirstName")}</option>
+              <option value="last_name">{t("users.sortLastName")}</option>
+            </Select>
+            <Select label={t("users.sortOrder")} hideLabel value={sortOrder} onChange={(e) => setParams({ sort_order: e.target.value === "desc" ? null : e.target.value, page: 1 })}>
+              <option value="desc">{t("users.sortDescending")}</option>
+              <option value="asc">{t("users.sortAscending")}</option>
+            </Select>
+            {(createdAfter || createdBefore || sortBy !== "created_at" || sortOrder !== "desc") && (
+              <Button variant="secondary" onClick={() => setParams({ created_after: null, created_before: null, sort_by: null, sort_order: null, page: 1 })}>
+                {t("users.resetFilters")}
+              </Button>
+            )}
+          </div>
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
@@ -122,7 +151,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
               <span>{t("users.userType")}</span>
               <span>{t("users.kycStatus")}</span>
               <span>{t("users.columnContact")}</span>
-              <span>{t("users.columnSecurity")}</span>
+              <span>{t("users.createdAt")}</span>
               <span>{t("common.status")}</span>
             </div>
             <ul className="divide-y divide-border">
@@ -142,7 +171,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
                         <p className="truncate">{user.email}</p>
                         <p className="truncate text-xs text-muted">{user.phone_number}</p>
                       </div>
-                      <div><span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${user.is_two_factor_enabled ? "bg-success-soft text-success" : "bg-subtle text-muted"}`}>{user.is_two_factor_enabled ? t("users.twoFaOn") : t("users.twoFaOff")}</span></div>
+                      <div><time dateTime={user.created_at} className="text-sm text-muted md:text-foreground">{formatDate(user.created_at, locale)}</time></div>
                       <div><UserStatusBadge user={user} /></div>
                     </Link>
                   </li>
