@@ -165,7 +165,7 @@ export function DatePicker({ label, value, onChange, disabled = false, hint, cla
       {hint && <p className="text-xs text-muted">{hint}</p>}
 
       {open && (
-        <div role="dialog" aria-label={label} className="absolute left-0 z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-surface p-3 shadow-card">
+        <div role="dialog" aria-label={label} className="fixed inset-x-2 top-1/2 z-50 mx-auto max-h-[calc(100dvh-1rem)] w-auto max-w-96 -translate-y-1/2 overflow-y-auto rounded-xl border border-border bg-surface p-3 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <button type="button" onClick={() => setMonth(shiftMonth(month, -1))} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-foreground" aria-label={t("dateRangePicker.previousMonth")}>
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -214,7 +214,7 @@ export function DatePicker({ label, value, onChange, disabled = false, hint, cla
   );
 }
 
-export function DateRangePicker({ from, to, onApply, align = "start", className = "", compact = false, allowAll = true }: DateRangePickerProps) {
+export function DateRangePicker({ from, to, onApply, className = "", compact = false, allowAll = true }: DateRangePickerProps) {
   const { t, locale } = useI18n();
   const popoverRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -271,7 +271,6 @@ export function DateRangePicker({ from, to, onApply, align = "start", className 
     onApply({ from: draftFrom, to: draftTo || draftFrom });
     setOpen(false);
   };
-  const panelAlign = align === "end" ? "sm:left-auto sm:right-0" : "sm:right-auto";
   const presets = allowAll ? PRESETS : PRESETS.filter(([id]) => id !== "all");
   const canApply = allowAll || Boolean(draftFrom);
 
@@ -335,7 +334,7 @@ export function DateRangePicker({ from, to, onApply, align = "start", className 
       </button>
 
       {open && (
-        <div role="dialog" aria-label={t("dateRangePicker.chooseDateRange")} className={`absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border border-border bg-surface shadow-card sm:w-[min(42rem,calc(100vw-2rem))] ${panelAlign}`}>
+        <div role="dialog" aria-label={t("dateRangePicker.chooseDateRange")} className="fixed inset-x-2 top-1/2 z-50 mx-auto max-h-[calc(100dvh-1rem)] w-auto max-w-2xl -translate-y-1/2 overflow-y-auto rounded-xl border border-border bg-surface shadow-card">
           <div className="grid gap-0 sm:grid-cols-[12rem_minmax(0,1fr)]">
             <div className="border-b border-border bg-subtle/50 p-3 sm:border-b-0 sm:border-r">
               <p className="px-1 text-xs font-semibold uppercase text-muted">{t("dateRangePicker.quickRanges")}</p>

@@ -16,6 +16,7 @@ import { InviteAdminModal } from "@/components/users/invite-admin-modal";
 import type { AdminUser } from "@/lib/users/types";
 
 const ROW_GRID = "md:grid-cols-[minmax(0,1.35fr)_7rem_7.5rem_minmax(0,1fr)_8rem_7.5rem]";
+const STAFF_ROW_GRID = "md:grid-cols-[minmax(0,1.35fr)_7rem_minmax(0,1fr)_8rem_7.5rem]";
 
 function formatDate(value: string | null, locale: string) {
   if (!value) return null;
@@ -53,6 +54,8 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
   const query = useUsers({ page, pageSize: 20, q: q || undefined, userType, isSuspended, includeDeleted, createdAfter: createdAfter || undefined, createdBefore: createdBefore || undefined, sortBy, sortOrder });
   const items = useMemo(() => query.data?.items ?? [], [query.data?.items]);
   const totalPages = query.data?.meta.total_pages ?? 1;
+  const showKycColumn = fixedUserType !== "admin";
+  const rowGrid = showKycColumn ? ROW_GRID : STAFF_ROW_GRID;
 
   const setParams = (updates: Record<string, string | number | null>) => {
     const next = new URLSearchParams(searchParams);
@@ -137,7 +140,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
 
       <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
         {query.isLoading ? (
-          <SkeletonRows rows={6} columns={5} />
+          <SkeletonRows rows={6} columns={showKycColumn ? 6 : 5} />
         ) : query.isError ? (
           <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         ) : items.length === 0 ? (
@@ -146,10 +149,10 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
           </EmptyState>
         ) : (
           <>
-            <div className={`hidden gap-4 bg-subtle/70 px-6 py-3 text-xs font-semibold uppercase text-muted md:grid ${ROW_GRID}`}>
+            <div className={`hidden gap-4 bg-subtle/70 px-6 py-3 text-xs font-semibold uppercase text-muted md:grid ${rowGrid}`}>
               <span>{t("users.columnPerson")}</span>
               <span>{t("users.userType")}</span>
-              <span>{t("users.kycStatus")}</span>
+              {showKycColumn && <span>{t("users.kycStatus")}</span>}
               <span>{t("users.columnContact")}</span>
               <span>{t("users.createdAt")}</span>
               <span>{t("common.status")}</span>
@@ -157,7 +160,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
             <ul className="divide-y divide-border">
                 {items.map((user: AdminUser) => (
                   <li key={user.id}>
-                    <Link href={href(`/users/${user.id}`)} className={`grid items-center gap-x-4 gap-y-2.5 px-4 py-4 transition hover:bg-subtle/50 focus-visible:bg-subtle/50 focus-visible:outline-none sm:px-6 ${ROW_GRID}`}>
+                    <Link href={href(`/users/${user.id}`)} className={`grid items-center gap-x-4 gap-y-2.5 px-4 py-4 transition hover:bg-subtle/50 focus-visible:bg-subtle/50 focus-visible:outline-none sm:px-6 ${rowGrid}`}>
                       <div className="flex min-w-0 items-center gap-3">
                         <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand">{initials(user)}</span>
                         <div className="min-w-0">
@@ -166,7 +169,7 @@ export function UsersPage({ userType: fixedUserType }: { userType?: "customer" |
                         </div>
                       </div>
                       <div><span className="capitalize text-sm text-muted md:text-foreground">{user.user_type === "admin" ? t("users.admin") : t("users.customer")}</span></div>
-                      <div><KycStatusBadge status={user.kyc_status} /></div>
+                      {showKycColumn && <div><KycStatusBadge status={user.kyc_status} /></div>}
                       <div className="min-w-0 text-sm">
                         <p className="truncate">{user.email}</p>
                         <p className="truncate text-xs text-muted">{user.phone_number}</p>
