@@ -146,8 +146,8 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-[min(24rem,calc(100vw-2rem))] animate-pop-in overflow-hidden rounded-xl border border-border bg-surface shadow-card">
-          <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <div className="fixed inset-x-3 top-full z-40 mt-2 flex max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top))] animate-pop-in flex-col overflow-hidden rounded-xl sm:absolute sm:inset-x-auto sm:right-0 sm:w-96 sm:max-w-[calc(100vw-2rem)] sm:max-h-[min(34rem,calc(100dvh-5rem))] border border-border bg-surface shadow-card">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div>
               <h2 className="text-sm font-semibold">{t("notifications.title")}</h2>
               {liveStatus !== "connected" && <p className="mt-0.5 text-xs text-muted">{liveStatus === "reconnecting" ? t("notifications.reconnecting") : t("notifications.liveError")}</p>}
@@ -158,7 +158,7 @@ export function NotificationBell() {
               </button>
             )}
           </div>
-          <div className="max-h-[min(28rem,70vh)] overflow-y-auto py-1">
+          <div className="min-h-0 flex-1 overflow-y-auto py-1">
             {query.isError ? (
               <p className="px-4 py-6 text-center text-sm text-muted">{t("notifications.loadError")}</p>
             ) : items.length === 0 ? (
@@ -183,7 +183,7 @@ export function NotificationBell() {
               ))
             )}
           </div>
-          <div className="border-t border-border p-2">
+          <div className="shrink-0 border-t border-border p-2">
             <button
               type="button"
               onClick={() => {

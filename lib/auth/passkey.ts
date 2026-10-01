@@ -11,6 +11,13 @@ export function rememberPasskey(email: string) {
     window.dispatchEvent(new Event("garde-passkeys"));
   } catch {}
 }
+const lastEmailKey = "garde-last-email";
+export function getLastEmail() {
+  try { return localStorage.getItem(lastEmailKey) || ""; } catch { return ""; }
+}
+export function rememberLastEmail(email: string) {
+  try { localStorage.setItem(lastEmailKey, email.trim().toLowerCase()); } catch {}
+}
 export function subscribePasskey(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener("garde-passkeys", callback);
