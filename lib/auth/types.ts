@@ -1,5 +1,5 @@
 export type TwoFactorMethod = "email_otp" | "totp";
-export type KycStatus = "not_started" | "pending" | "in_review" | "approved" | "declined" | "expired";
+export type KycStatus = "not_started" | "pending" | "in_review" | "resubmission_required" | "approved" | "declined" | "expired";
 
 export interface User {
   id: string;

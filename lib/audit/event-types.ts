@@ -18,4 +18,11 @@ export const AUDIT_EVENT_TYPES: { value: string; labelKey: MessagePath }[] = [
   { value: "account_restored", labelKey: "auditTrail.eventAccountRestored" },
   { value: "account_restore_failed", labelKey: "auditTrail.eventAccountRestoreFailed" },
   { value: "webauthn_registered", labelKey: "auditTrail.eventWebauthnRegistered" },
+  { value: "kyc_started", labelKey: "auditTrail.eventKycStarted" },
+  { value: "kyc_pending", labelKey: "auditTrail.eventKycPending" },
+  { value: "kyc_in_review", labelKey: "auditTrail.eventKycInReview" },
+  { value: "kyc_resubmission_required", labelKey: "auditTrail.eventKycResubmissionRequired" },
+  { value: "kyc_approved", labelKey: "auditTrail.eventKycApproved" },
+  { value: "kyc_declined", labelKey: "auditTrail.eventKycDeclined" },
+  { value: "kyc_expired", labelKey: "auditTrail.eventKycExpired" },
 ];
