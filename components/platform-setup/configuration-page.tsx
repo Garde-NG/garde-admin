@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Icon, type IconName } from "@/components/dashboard/screen-kit";
 import { useI18n } from "@/lib/i18n/provider";
 import { useCountries } from "@/lib/query/countries";
+import { useCardSchemes } from "@/lib/query/cards";
 
 function total(data: { meta: { total_items: number } } | undefined) {
   return data ? data.meta.total_items.toLocaleString() : undefined;
@@ -62,6 +63,9 @@ function ConfigCard({
 export function ConfigurationPage() {
   const { t } = useI18n();
   const countries = useCountries({ page: 1, pageSize: 20 });
+  const schemes = useCardSchemes();
+  const enabledSchemes = schemes.data ? `${schemes.data.filter((scheme) => scheme.enabled).length}/${schemes.data.length}` : undefined;
+  const disabledSchemes = schemes.data?.some((scheme) => !scheme.enabled);
 
   return (
     <div>
@@ -79,6 +83,14 @@ export function ConfigurationPage() {
           title={t("platformSetup.countriesTitle")}
           description={t("platformSetup.countriesCardDescription")}
           stats={[{ label: t("platformSetup.countriesTitle"), value: total(countries.data) }]}
+        />
+        <ConfigCard
+          href="/configuration/card-schemes"
+          icon="layers"
+          title={t("schemes.title")}
+          description={t("schemes.cardDescription")}
+          stats={[{ label: t("schemes.enabled"), value: enabledSchemes }]}
+          badge={disabledSchemes ? t("schemes.someDisabled") : undefined}
         />
       </div>
     </div>

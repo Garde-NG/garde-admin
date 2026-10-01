@@ -32,7 +32,7 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
       onClick={(event) => {
         if (event.target === ref.current) onClose();
       }}
-      className={`m-0 mt-auto h-auto max-h-[100dvh] w-full ${width} overflow-y-auto overscroll-contain rounded-t-2xl border border-border bg-surface p-0 text-foreground shadow-card backdrop:bg-black/60 backdrop:backdrop-blur-[2px] open:animate-pop-in sm:m-auto sm:max-h-[calc(100dvh-3rem)] sm:w-[calc(100%-1.5rem)] sm:rounded-2xl`}
+      className={`m-0 mt-auto h-fit max-h-[100dvh] w-full ${width} overflow-y-auto overscroll-contain rounded-t-2xl border border-border bg-surface p-0 text-foreground shadow-card backdrop:bg-black/60 backdrop:backdrop-blur-[2px] open:animate-pop-in sm:m-auto sm:max-h-[calc(100dvh-3rem)] sm:w-[calc(100%-1.5rem)] sm:rounded-2xl`}
     >
       {open && (
         <div className="space-y-4 p-4 sm:p-6">

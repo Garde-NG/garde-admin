@@ -15,11 +15,16 @@ function stringParam(value: unknown): string | null {
   return typeof value === "string" && value ? value : null;
 }
 
-function relatedPath(path: string | null, params: Record<string, unknown>): string | null {
+function relatedPath(path: string | null, params: Record<string, unknown>, type = ""): string | null {
   if (!path || !path.startsWith("/") || path.startsWith("//")) return null;
   if (path === "/admin/users" || path === "/admin/users/") {
     const userId = stringParam(params.user_id);
     return userId ? `/users/${userId}` : "/customers";
+  }
+  if (path === "/admin/cards" || path.startsWith("/admin/cards/")) {
+    const cardId = stringParam(params.card_id);
+    if (cardId) return `/cards/${cardId}`;
+    return type.startsWith("admin_card_scheme") ? "/configuration/card-schemes" : "/cards";
   }
   if (path.startsWith("/account/security")) return "/settings/security";
   if (path.startsWith("/account")) return "/settings/profile";
@@ -40,7 +45,7 @@ export function NotificationDetailPage({ id }: { id: string }) {
     markRead.mutate(notification.id);
   }, [notification, markRead]);
 
-  const actionPath = notification ? relatedPath(notification.web_route, notification.params) : null;
+  const actionPath = notification ? relatedPath(notification.web_route, notification.params, notification.type) : null;
 
   return (
     <div className="mx-auto max-w-3xl">

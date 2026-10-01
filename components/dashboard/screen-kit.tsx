@@ -5,6 +5,48 @@ import { useId, type ReactNode } from "react";
 import { useI18n } from "@/lib/i18n/provider";
 
 const PATHS = {
+  activity: <path d="M3 12h4l3-8 4 16 3-8h4" />,
+  alert: <path d="M12 9v4m0 3.5v.01M10.3 3.9 2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />,
+  arrowDownLeft: <path d="M17 7 7 17m0-8v8h8" />,
+  arrowUpRight: <path d="M7 17 17 7m0 8V7H9" />,
+  ban: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m5.6 5.6 12.8 12.8" />
+    </>
+  ),
+  card: (
+    <>
+      <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+      <path d="M2.5 10h19M6.5 15h4" />
+    </>
+  ),
+  layers: <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" />,
+  play: <path d="M7 4.5v15l12-7.5-12-7.5Z" />,
+  plus: <path d="M12 5v14M5 12h14" />,
+  refresh: <path d="M20 11a8 8 0 0 0-14.3-4.9L4 8m0-4v4h4m-4 5a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4" />,
+  scale: <path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0L5 7Zm14 0-3 7a3 3 0 0 0 6 0l-3-7Z" />,
+  snowflake: <path d="M12 2v20M4.9 6l14.2 12M19.1 6 4.9 18M9 4l3 2 3-2M9 20l3-2 3 2M3.5 9.5 6.4 10l-.9 2.9M20.5 14.5l-2.9-.5.9-2.9M3.5 14.5l2.9-.5-.9-2.9M20.5 9.5l-2.9.5.9 2.9" />,
+  store: (
+    <>
+      <path d="M4 10v10h16V10M3 4h18l-1 6H4L3 4Z" />
+      <path d="M10 20v-5h4v5" />
+    </>
+  ),
+  sync: <path d="M4 7h13l-3-3m6 13H7l3 3" />,
+  unlock: (
+    <>
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 7.6-1.7" />
+    </>
+  ),
+  wallet: (
+    <>
+      <path d="M19 7V5a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V6" />
+      <path d="M16 13.5h.01" />
+    </>
+  ),
+  x: <path d="M6 6l12 12M18 6 6 18" />,
   arrowLeft: <path d="M19 12H5m6-6-6 6 6 6" />,
   arrowRight: <path d="M5 12h14m-6-6 6 6-6 6" />,
   bell: (

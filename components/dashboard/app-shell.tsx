@@ -86,6 +86,21 @@ const ICONS: Record<NavIcon, ReactNode> = {
       <path d="M8 17c.5-2 2-3 4-3s3.5 1 4 3" />
     </>
   ),
+  card: (
+    <>
+      <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+      <path d="M2.5 10h19M6.5 15h4" />
+    </>
+  ),
+  activity: <path d="M3 12h4l3-8 4 16 3-8h4" />,
+  store: (
+    <>
+      <path d="M4 10v10h16V10M3 4h18l-1 6H4L3 4Z" />
+      <path d="M10 20v-5h4v5" />
+    </>
+  ),
+  scale: <path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0L5 7Zm14 0-3 7a3 3 0 0 0 6 0l-3-7Z" />,
+  sync: <path d="M4 7h13l-3-3m6 13H7l3 3" />,
   platform: (
     <>
       <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
@@ -131,6 +146,12 @@ function Navigation({ sections, onNavigate, collapsed = false }: { sections: Nav
   };
   const hideTip = () => setTip(null);
 
+  // Nested items (e.g. /cards and /cards/activity) share a prefix, so only the most specific match is current.
+  const activeHref = sections
+    .flatMap((section) => section.items.map((item) => href(item.href)))
+    .filter((itemHref) => pathname === itemHref || pathname.startsWith(`${itemHref}/`))
+    .sort((a, b) => b.length - a.length)[0];
+
   return (
     <nav
       aria-label={t("nav.main")}
@@ -157,7 +178,7 @@ function Navigation({ sections, onNavigate, collapsed = false }: { sections: Nav
           <ul className="space-y-0.5">
             {section.items.map((item) => {
               const localizedHref = href(item.href);
-              const active = pathname === localizedHref || pathname.startsWith(`${localizedHref}/`);
+              const active = localizedHref === activeHref;
               const label = t(item.labelKey);
               return (
                 <li key={item.href}>

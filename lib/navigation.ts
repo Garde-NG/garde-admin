@@ -1,6 +1,6 @@
-export type NavIcon = "dashboard" | "notifications" | "profile" | "security" | "legal" | "audit" | "users" | "staff" | "platform";
+export type NavIcon = "dashboard" | "notifications" | "profile" | "security" | "legal" | "audit" | "users" | "staff" | "platform" | "card" | "activity" | "store" | "scale" | "sync";
 export interface NavSection {
-  titleKey?: "nav.account" | "nav.platform" | "nav.people";
+  titleKey?: "nav.account" | "nav.platform" | "nav.people" | "nav.cards";
   items: {
     labelKey:
       | "nav.dashboard"
@@ -11,7 +11,12 @@ export interface NavSection {
       | "nav.auditTrail"
       | "nav.customers"
       | "nav.staff"
-      | "nav.configuration";
+      | "nav.configuration"
+      | "nav.cardList"
+      | "nav.cardActivity"
+      | "nav.merchants"
+      | "nav.reconciliation"
+      | "nav.walletSync";
     href: string;
     icon: NavIcon;
   }[];
@@ -23,6 +28,13 @@ export const NAVIGATION: NavSection[] = [
   { titleKey: "nav.people", items: [
     { labelKey: "nav.customers", href: "/customers", icon: "users" },
     { labelKey: "nav.staff", href: "/staff", icon: "staff" },
+  ] },
+  { titleKey: "nav.cards", items: [
+    { labelKey: "nav.cardList", href: "/cards", icon: "card" },
+    { labelKey: "nav.cardActivity", href: "/cards/activity", icon: "activity" },
+    { labelKey: "nav.merchants", href: "/cards/merchants", icon: "store" },
+    { labelKey: "nav.reconciliation", href: "/cards/reconciliation", icon: "scale" },
+    { labelKey: "nav.walletSync", href: "/cards/wallet-sync", icon: "sync" },
   ] },
   { titleKey: "nav.platform", items: [
     { labelKey: "nav.configuration", href: "/configuration", icon: "platform" },

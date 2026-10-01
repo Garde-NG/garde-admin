@@ -16,6 +16,7 @@ The UI uses the EV admin platform's token system, Geist fonts, shared form contr
 | Brand soft | #e6f6f0 | #0f2b23 |
 | Danger | #b42318 | #f97066 |
 | Success | #067647 | #47cd89 |
+| Warning | #b54708 | #fdb022 |
 
 Source of truth: app/globals.css. Components use semantic tokens so both themes stay consistent.
 

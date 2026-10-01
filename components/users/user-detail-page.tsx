@@ -115,6 +115,18 @@ export function UserDetailPage({ id }: { id: string }) {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              {target.user_type === "customer" && (
+                <>
+                  <Link href={href(`/cards?user_id=${target.id}`)} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium transition hover:bg-subtle">
+                    <Icon name="card" className="size-4" />
+                    {t("cards.viewCards")}
+                  </Link>
+                  <Link href={href(`/cards/activity?user_id=${target.id}`)} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium transition hover:bg-subtle">
+                    <Icon name="activity" className="size-4" />
+                    {t("cards.viewCardActivity")}
+                  </Link>
+                </>
+              )}
               <Link href={href(`/audit-trail?user_id=${target.id}`)} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium transition hover:bg-subtle">
                 <Icon name="shield" className="size-4" />
                 {t("users.viewAuditTrail")}
